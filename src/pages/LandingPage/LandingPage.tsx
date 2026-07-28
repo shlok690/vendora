@@ -103,12 +103,12 @@ function LandingPage() {
             </p>
 
             <div className="hero-actions">
-              <Link className="primary-button" to="/login">
+              <a className="primary-button" href="#features">
+                Explore Platform
+              </a>
+              <Link className="secondary-link" to="/login">
                 Login to Continue
               </Link>
-              <a className="secondary-link" href="#features">
-                Explore Features
-              </a>
             </div>
 
             <div className="stats-grid">
