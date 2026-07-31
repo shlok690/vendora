@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './LandingPage.css';
 
 const stats = [
@@ -66,6 +67,10 @@ const plans = [
 ];
 
 function LandingPage() {
+  const { currentUser, userProfile, userRole } = useAuth();
+  const displayName = userProfile?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0];
+  const dashboardPath = userRole === 'admin' ? '/admin-dashboard' : '/user-dashboard';
+
   return (
     <div className="landing-page">
       <header className="landing-header">
@@ -84,9 +89,15 @@ function LandingPage() {
           <a href="#contact">Contact</a>
         </nav>
 
-        <Link className="nav-button" to="/login">
-          Login
-        </Link>
+        {currentUser && displayName ? (
+          <Link className="nav-button" to={dashboardPath}>
+            {displayName}
+          </Link>
+        ) : (
+          <Link className="nav-button" to="/login">
+            Login
+          </Link>
+        )}
       </header>
 
       <main id="top">

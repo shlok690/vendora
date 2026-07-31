@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage/LandingPage';
-import LoginPage, { LoginSelectionPage } from './pages/Login/LoginPage';
+import LoginPage from './pages/Login/LoginPage';
 import RegisterPage, { RegisterSelectionPage } from './pages/Register/RegisterPage';
 import AdminDashboardPage from './pages/Dashboard/AdminDashboardPage';
 import UserDashboardPage from './pages/Dashboard/UserDashboardPage';
@@ -14,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/video" element={<VideoPage />} />
-        <Route path="/login" element={<LoginSelectionPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/login/admin" element={<LoginPage loginRole="admin" />} />
         <Route path="/login/user" element={<LoginPage loginRole="user" />} />
         <Route path="/register" element={<RegisterSelectionPage />} />

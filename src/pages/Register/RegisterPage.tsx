@@ -24,24 +24,6 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
     setRole(registerRole);
   }, [registerRole]);
 
-  const waitForAuthToSettle = async (expectedUid: string) => {
-    if (auth.currentUser?.uid === expectedUid) return;
-
-    await new Promise<void>((resolve) => {
-      const unsubscribe = auth.onAuthStateChanged((user) => {
-        if (user?.uid === expectedUid) {
-          unsubscribe();
-          resolve();
-        }
-      });
-
-      window.setTimeout(() => {
-        unsubscribe();
-        resolve();
-      }, 2000);
-    });
-  };
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -69,11 +51,10 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
         }
       }
 
-      // 2. Save user role instantly
-      await saveUserRole(user, role, displayName.trim());
-      await waitForAuthToSettle(user.uid);
+      // 2. Save user role persistently, so the admin role remains after auth state refresh.
+      await saveUserRole(user, role, displayName.trim(), true);
 
-      // 3. Navigate to designated dashboard after auth is ready
+      // 3. Navigate to designated dashboard immediately
       if (role === 'admin') {
         navigate('/admin-dashboard', { replace: true });
       } else {

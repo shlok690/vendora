@@ -50,8 +50,41 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
     return <Navigate to="/login" replace />;
   }
 
+  if (allowedRoles && !userRole) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          color: '#f8fafc',
+          fontFamily: "'Inter', system-ui, sans-serif",
+        }}
+      >
+        <div
+          style={{
+            width: '48px',
+            height: '48px',
+            border: '4px solid rgba(255, 255, 255, 0.1)',
+            borderTopColor: '#38bdf8',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+          }}
+        />
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+        <p style={{ marginTop: '1.25rem', color: '#94a3b8', fontSize: '0.95rem' }}>Loading your dashboard…</p>
+      </div>
+    );
+  }
+
   if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    // Redirect user to their designated dashboard if attempting to access an unauthorized route
     return <Navigate to={userRole === 'admin' ? '/admin-dashboard' : '/user-dashboard'} replace />;
   }
 

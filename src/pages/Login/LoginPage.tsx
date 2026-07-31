@@ -5,7 +5,7 @@ import { auth } from '../../firebase';
 import { useAuth, type UserRole } from '../../context/AuthContext';
 
 interface LoginPageProps {
-  loginRole: UserRole;
+  loginRole?: UserRole;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ loginRole }) => {
@@ -13,45 +13,26 @@ const LoginPage: React.FC<LoginPageProps> = ({ loginRole }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   const navigate = useNavigate();
-  const { currentUser, userRole, getUserRole } = useAuth();
+  const { currentUser, userRole, loading, getUserRole } = useAuth();
   const isAdmin = loginRole === 'admin';
 
   useEffect(() => {
+    if (hasRedirected || loading) return;
     if (currentUser && userRole) {
-      if (userRole === loginRole) {
-        navigate(loginRole === 'admin' ? '/admin-dashboard' : '/user-dashboard', { replace: true });
-      } else {
-        navigate(userRole === 'admin' ? '/admin-dashboard' : '/user-dashboard', { replace: true });
-      }
+      navigate(userRole === 'admin' ? '/admin-dashboard' : '/user-dashboard', { replace: true });
+      setHasRedirected(true);
     }
-  }, [currentUser, userRole, navigate, loginRole]);
-
-  const waitForAuthToSettle = async (expectedUid: string) => {
-    if (auth.currentUser?.uid === expectedUid) return;
-
-    await new Promise<void>((resolve) => {
-      const unsubscribe = auth.onAuthStateChanged((user) => {
-        if (user?.uid === expectedUid) {
-          unsubscribe();
-          resolve();
-        }
-      });
-
-      window.setTimeout(() => {
-        unsubscribe();
-        resolve();
-      }, 2000);
-    });
-  };
+  }, [currentUser, userRole, loading, navigate, loginRole, hasRedirected]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setInfoMessage(null);
-    setLoading(true);
+    setIsSubmitting(true);
 
     const cleanedEmail = email.trim().toLowerCase();
 
@@ -60,18 +41,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ loginRole }) => {
       const user = userCredential.user;
       const role = await getUserRole(user);
 
-      if (role !== loginRole) {
+      if (!role) {
         await signOut(auth);
-        setError(
-          isAdmin
-            ? 'This account is not assigned as an admin. Please use the resident login page instead.'
-            : 'This account is not assigned as a resident user. Please use the admin login page instead.'
-        );
+        setError('Your account does not have a role yet. Please register as an admin or resident first.');
         return;
       }
 
-      await waitForAuthToSettle(user.uid);
-      navigate(loginRole === 'admin' ? '/admin-dashboard' : '/user-dashboard', { replace: true });
+      setInfoMessage('Login successful. Redirecting you to the dashboard...');
+      navigate(role === 'admin' ? '/admin-dashboard' : '/user-dashboard', { replace: true });
     } catch (err: any) {
       console.error('Login error:', err);
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
@@ -86,7 +63,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ loginRole }) => {
         setError(err.message || 'Login failed. Please check your credentials.');
       }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -266,7 +243,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ loginRole }) => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             style={{
               padding: '0.85rem',
               borderRadius: '12px',
@@ -281,7 +258,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ loginRole }) => {
               transition: 'all 0.2s',
             }}
           >
-            {loading ? 'Authenticating…' : 'Sign In 🚀'}
+            {isSubmitting ? 'Authenticating…' : 'Sign In 🚀'}
           </button>
         </form>
 
@@ -289,71 +266,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ loginRole }) => {
           Don't have an account?{' '}
           <Link to="/register" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 600 }}>
             Create Account
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export const LoginSelectionPage: React.FC = () => {
-  return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'radial-gradient(circle at top, #0f172a 0%, #020617 100%)',
-        color: '#f8fafc',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem 1rem',
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '460px',
-          backgroundColor: 'rgba(30, 41, 59, 0.7)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '24px',
-          padding: '2.5rem',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-          textAlign: 'center',
-        }}
-      >
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.75rem', color: '#fff' }}>Choose Your Portal</h1>
-        <p style={{ color: '#94a3b8', marginBottom: '1.75rem' }}>
-          Select the login page for your account type.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <Link
-            to="/login/admin"
-            style={{
-              textDecoration: 'none',
-              padding: '1rem 1.25rem',
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
-              color: '#fff',
-              fontWeight: 700,
-            }}
-          >
-            Admin Login
-          </Link>
-          <Link
-            to="/login/user"
-            style={{
-              textDecoration: 'none',
-              padding: '1rem 1.25rem',
-              borderRadius: '14px',
-              border: '1px solid #334155',
-              color: '#f8fafc',
-              fontWeight: 700,
-              backgroundColor: '#0f172a',
-            }}
-          >
-            User Login
           </Link>
         </div>
       </div>
