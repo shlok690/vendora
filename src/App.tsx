@@ -3,25 +3,51 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage/LandingPage';
 import LoginPage from './pages/Login/LoginPage';
-import RegisterPage, { RegisterSelectionPage } from './pages/Register/RegisterPage';
+import RegisterPage from './pages/Register/RegisterPage';
 import AdminDashboardPage from './pages/Dashboard/AdminDashboardPage';
-import UserDashboardPage from './pages/Dashboard/UserDashboardPage';
-import VideoPage from './pages/Video/VideoPage';
+import VendorOnboardingPage from './pages/Dashboard/VendorOnboardingPage';
+import CustomerExplorePage from './pages/Dashboard/CustomerExplorePage';
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/video" element={<VideoPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/login/admin" element={<LoginPage loginRole="admin" />} />
-        <Route path="/login/user" element={<LoginPage loginRole="user" />} />
-        <Route path="/register" element={<RegisterSelectionPage />} />
-        <Route path="/register/admin" element={<RegisterPage registerRole="admin" />} />
-        <Route path="/register/user" element={<RegisterPage registerRole="user" />} />
+        {/* Public routes */}
+        <Route path="/"       element={<LandingPage />} />
+        <Route path="/login"  element={<LoginPage />} />
 
-        {/* Protected Admin Route */}
+        {/* Register routes */}
+        <Route path="/register"         element={<RegisterPage registerRole="customer" />} />
+        <Route path="/register/seller"  element={<RegisterPage registerRole="vendor" />} />
+        <Route path="/register/buyer"   element={<RegisterPage registerRole="customer" />} />
+        <Route path="/register/admin"   element={<RegisterPage registerRole="admin" />} />
+
+        {/* Legacy register paths — redirect to new paths */}
+        <Route path="/register/user"    element={<Navigate to="/register/buyer" replace />} />
+        <Route path="/login/admin"      element={<Navigate to="/login" replace />} />
+        <Route path="/login/user"       element={<Navigate to="/login" replace />} />
+
+        {/* Protected — Vendor */}
+        <Route
+          path="/seller-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['vendor']}>
+              <VendorOnboardingPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected — Customer */}
+        <Route
+          path="/buyer-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['customer']}>
+              <CustomerExplorePage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected — Admin */}
         <Route
           path="/admin-dashboard"
           element={
@@ -31,25 +57,8 @@ function App() {
           }
         />
 
-        {/* Protected User Route */}
-        <Route
-          path="/user-dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['user']}>
-              <UserDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Fallback route redirect */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['admin', 'user']}>
-              <Navigate to="/user-dashboard" replace />
-            </ProtectedRoute>
-          }
-        />
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   );

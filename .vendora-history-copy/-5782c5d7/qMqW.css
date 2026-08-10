@@ -1,0 +1,35 @@
+*{
+       margin: 0;   
+       padding: 0; 
+       box-sizing: border-box;
+       font-family: 'Poppins', sans-serif;
+}
+html
+body
+{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black
+        ;
+}
+h1{
+    color:red;
+    background-color:pink;
+    font-size:40px;
+    font-family:verdana;
+    font-style:italic;
+    font-weight:400;
+    text-align:center;
+}
+h6{
+    color:blue;
+    background-color:lightblue;
+    font-size:30px;
+    font-family:verdana;
+    font-style:italic;
+    font-weight:400;
+    text-align:center;
+}

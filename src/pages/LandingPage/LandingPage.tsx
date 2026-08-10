@@ -1,233 +1,266 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './LandingPage.css';
 
+/* ── Data ── */
+const categories = [
+  { label: 'Furniture',    icon: '🪑', bg: 'linear-gradient(135deg,#d4a373,#a98467)', emoji: '🛋️' },
+  { label: 'Clothing',     icon: '👗', bg: 'linear-gradient(135deg,#b8c0cc,#8d99ae)', emoji: '👕' },
+  { label: 'Handicrafts',  icon: '🧶', bg: 'linear-gradient(135deg,#c9b1bd,#967aa1)', emoji: '🎨' },
+  { label: 'Electronics',  icon: '💡', bg: 'linear-gradient(135deg,#90e0ef,#0096c7)', emoji: '📱' },
+  { label: 'Food & Spices',icon: '🌶️', bg: 'linear-gradient(135deg,#f4a261,#e76f51)', emoji: '🍛' },
+  { label: 'Jewellery',    icon: '💍', bg: 'linear-gradient(135deg,#ffd166,#ef9c00)', emoji: '✨' },
+];
+
+const vendors = [
+  { name: 'Riya Crafts',     category: 'Handicrafts', rating: '4.9', products: 48, cover: 'linear-gradient(135deg,#fce4d6,#f9bba0)', avatar: '🎨' },
+  { name: 'TechNook Store',  category: 'Electronics', rating: '4.7', products: 63, cover: 'linear-gradient(135deg,#d0f0fd,#90d5f5)', avatar: '📱' },
+  { name: 'Weavers Hub',     category: 'Clothing',    rating: '4.8', products: 31, cover: 'linear-gradient(135deg,#e8d5f5,#c5a4e5)', avatar: '👗' },
+  { name: 'Spice Trail',     category: 'Food',        rating: '4.6', products: 22, cover: 'linear-gradient(135deg,#fef3c7,#fcd34d)', avatar: '🌶️' },
+];
+
+const vendorSteps = [
+  { icon: '📝', title: 'Create your store', desc: 'Set up your profile, add your store name and description in minutes.' },
+  { icon: '📦', title: 'List your products', desc: 'Upload photos, set prices and manage your inventory easily.' },
+  { icon: '💰', title: 'Start earning', desc: 'Receive orders, get paid securely and grow your local business.' },
+];
+
+const customerSteps = [
+  { icon: '🔍', title: 'Discover shops',    desc: 'Explore hundreds of local vendors across every category.' },
+  { icon: '🛒', title: 'Add to cart',       desc: 'Pick the products you love from trusted local sellers.' },
+  { icon: '🚀', title: 'Fast delivery',     desc: 'Get your order delivered quickly, right to your door.' },
+];
+
 const stats = [
-  { value: '120+', label: 'Societies' },
-  { value: '48,000+', label: 'Residents' },
-  { value: '99.9%', label: 'Uptime' },
-  { value: '₹12Cr+', label: 'Collected' },
+  { value: '2,400+', label: 'Active Vendors' },
+  { value: '18K+',   label: 'Products Listed' },
+  { value: '94K+',   label: 'Happy Customers' },
+  { value: '₹4.2Cr', label: 'Revenue Generated' },
 ];
 
-const features = [
-  {
-    title: 'Visitor Management',
-    description: 'Digital gate passes, QR-based entries and instant approvals from anywhere.',
-    icon: '🛂',
-  },
-  {
-    title: 'Maintenance & Billing',
-    description: 'Automate invoices, collect payments and track dues without spreadsheets.',
-    icon: '💳',
-  },
-  {
-    title: 'Notice Board',
-    description: 'Send announcements, meeting reminders and urgent alerts to the whole community.',
-    icon: '📢',
-  },
-  {
-    title: 'Complaints & Requests',
-    description: 'Log issues, delegate them to staff and keep every resolution visible.',
-    icon: '🛠️',
-  },
-  {
-    title: 'Amenity Booking',
-    description: 'Let residents book the clubhouse, gym or courts in seconds.',
-    icon: '🏊',
-  },
-  {
-    title: 'Security & Staff',
-    description: 'Manage guards, housekeeping and attendance from one simple dashboard.',
-    icon: '👮',
-  },
-];
+/* ── Scroll-reveal hook ── */
+function useReveal() {
+  useEffect(() => {
+    const targets = document.querySelectorAll<HTMLElement>('.reveal');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+        });
+      },
+      { threshold: 0.10 }
+    );
+    targets.forEach((t) => observer.observe(t));
+    return () => observer.disconnect();
+  }, []);
+}
 
-const plans = [
-  {
-    name: 'Starter',
-    price: '₹999',
-    subtitle: 'For smaller communities of up to 50 flats',
-    perks: ['Visitor management', 'Notice board', 'Basic complaints', 'Email support'],
-    accent: 'neutral',
-  },
-  {
-    name: 'Growth',
-    price: '₹2,499',
-    subtitle: 'Perfect for expanding societies with active operations',
-    perks: ['Everything in Starter', 'Maintenance billing', 'Amenity booking', 'Priority support'],
-    accent: 'featured',
-  },
-  {
-    name: 'Enterprise',
-    price: '₹4,999',
-    subtitle: 'For large communities with custom workflows',
-    perks: ['Everything in Growth', 'Multi-tower support', 'Custom reports', 'Dedicated manager'],
-    accent: 'neutral',
-  },
-];
+/* ── Sticky header shadow ── */
+function useHeaderScroll() {
+  const ref = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const fn = () => el.classList.toggle('scrolled', window.scrollY > 16);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+  return ref;
+}
 
-function LandingPage() {
+/* ── Component ── */
+export default function LandingPage() {
   const { currentUser, userProfile, userRole } = useAuth();
-  const displayName = userProfile?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0];
-  const dashboardPath = userRole === 'admin' ? '/admin-dashboard' : '/user-dashboard';
+  const [search, setSearch] = useState('');
+
+  const displayName = userProfile?.displayName ?? currentUser?.email?.split('@')[0];
+  const dashPath = userRole === 'admin' ? '/admin-dashboard' : userRole === 'vendor' ? '/seller-dashboard' : '/buyer-dashboard';
+
+  useReveal();
+  const headerRef = useHeaderScroll();
 
   return (
-    <div className="landing-page">
-      <header className="landing-header">
-        <a className="brand" href="#top">
-          <span className="brand-mark">S</span>
-          <span>
-            <strong>SocietyOS</strong>
-            <small>Management Suite</small>
-          </span>
-        </a>
+    <div className="lp">
+      {/* ── Header ── */}
+      <header className="lp-header" ref={headerRef as React.RefObject<HTMLElement>}>
+        <div className="lp-header-inner">
+          <a className="lp-brand" href="#top">
+            <img src="/vendora-logo.jpg" alt="Vendora" className="lp-brand-logo" />
+          </a>
 
-        <nav className="landing-nav" aria-label="Primary navigation">
-          <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
-        </nav>
-
-        {currentUser && displayName ? (
-          <Link className="nav-button" to={dashboardPath}>
-            {displayName}
-          </Link>
-        ) : (
-          <Link className="nav-button" to="/login">
-            Login
-          </Link>
-        )}
+          <div className="lp-header-cta">
+            {currentUser && displayName ? (
+              <Link className="btn btn-blue" to={dashPath}>
+                {displayName} →
+              </Link>
+            ) : (
+              <>
+                <Link className="btn btn-ghost" to="/login">Login</Link>
+                <Link className="btn btn-solid" to="/register">Sign Up</Link>
+              </>
+            )}
+          </div>
+        </div>
       </header>
 
       <main id="top">
-        <section className="hero-section">
-          <div className="hero-copy">
-            <p className="eyebrow">Trusted by 120+ societies across India</p>
-            <h1>
-              Welcome to <span>Society Management System</span>
-            </h1>
-            <p className="hero-text">
-              Run your residential society end-to-end — visitor logs, maintenance dues,
-              notices, complaints, amenity bookings and staff, all in one beautifully simple
-              platform.
-            </p>
-
-            <div className="hero-actions">
-              <a className="primary-button" href="#features">
-                Explore Platform
-              </a>
-              <Link className="secondary-link" to="/login">
-                Login to Continue
-              </Link>
+        {/* ── Hero ── */}
+        <section className="hero">
+          <div className="hero-inner">
+            <div className="hero-badge">
+              <span className="hero-badge-dot" />
+              2,400+ Local Vendors on Vendora
             </div>
 
-            <div className="stats-grid">
-              {stats.map((stat) => (
-                <div key={stat.label} className="stat-card">
-                  <strong>{stat.value}</strong>
-                  <span>{stat.label}</span>
+            <h1>
+              Your Business.<br />
+              Your Store. <span className="accent">Your Rules.</span>
+            </h1>
+
+            <p className="hero-desc">
+              Vendora connects local vendors and artisans with customers who love discovering unique,
+              handcrafted and locally sourced products.
+            </p>
+
+            {/* Search */}
+            <div className="hero-search">
+              <span className="hero-search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Search for products or shops…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <button className="hero-search-btn">Search</button>
+            </div>
+
+            {/* Categories */}
+            <div className="categories" id="categories">
+              {categories.map((cat) => (
+                <div key={cat.label} className="cat-card">
+                  <div style={{ width: '100%', height: '100%', background: cat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>
+                    {cat.emoji}
+                  </div>
+                  <div className="cat-card-overlay" />
+                  <span className="cat-card-icon">{cat.icon}</span>
+                  <span className="cat-card-label">{cat.label}</span>
                 </div>
               ))}
             </div>
           </div>
+        </section>
 
-          <div className="hero-visual" aria-label="Intro video preview">
-            <div className="video-card">
-              <video className="hero-video" autoPlay muted loop playsInline>
-                <source src="/video-preview.mp4" type="video/mp4" />
-              </video>
-              <div className="video-overlay-card">
-                <p className="eyebrow">Live demo</p>
-                <h3>See the platform in action</h3>
-                <p>Residents, staff and committees stay connected in one seamless experience.</p>
+        {/* ── Stats ── */}
+        <div className="stats-banner">
+          <div className="stats-banner-inner">
+            {stats.map((s) => (
+              <div className="stat-item reveal" key={s.label}>
+                <strong>{s.value}</strong>
+                <span>{s.label}</span>
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Featured Vendors ── */}
+        <section className="section" id="vendors">
+          <div className="container">
+            <div className="section-heading reveal">
+              <div className="section-label">Featured Vendor Shops</div>
+              <h2>Discover top local sellers.</h2>
+              <p>Browse handpicked vendors with great products, stellar reviews and fast delivery.</p>
+            </div>
+
+            <div className="vendors-grid">
+              {vendors.map((v, i) => (
+                <div key={v.name} className={`vendor-card reveal reveal-delay-${i + 1}`}>
+                  <div className="vendor-cover" style={{ background: v.cover }}>
+                    <div className="vendor-avatar">{v.avatar}</div>
+                  </div>
+                  <div className="vendor-body">
+                    <div className="vendor-name">{v.name}</div>
+                    <div className="vendor-category">{v.category}</div>
+                    <div className="vendor-meta">
+                      <span>⭐ {v.rating}</span>
+                      <span>📦 {v.products} products</span>
+                    </div>
+                    <Link to="/register/buyer" className="vendor-shop-btn">Shop Now</Link>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="section" id="features">
-          <div className="section-heading">
-            <p className="eyebrow">What we offer</p>
-            <h2>Everything a modern society needs.</h2>
-            <p>
-              Replace WhatsApp groups, paper registers and Excel sheets with one delightful
-              platform built for committees, residents and staff alike.
-            </p>
-          </div>
+        {/* ── How it works ── */}
+        <section className="section section-alt" id="how-it-works">
+          <div className="container">
+            {/* For Vendors */}
+            <div className="section-heading reveal">
+              <div className="section-label">For Vendors</div>
+              <h2>Sell in 3 simple steps.</h2>
+              <p>Set up your store in minutes and start reaching customers across your city.</p>
+            </div>
 
-          <div className="feature-grid">
-            {features.map((feature) => (
-              <article key={feature.title} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="section" id="pricing">
-          <div className="section-heading">
-            <p className="eyebrow">Pricing</p>
-            <h2>Simple, transparent plans.</h2>
-            <p>Start free for 14 days. Cancel anytime. No credit card required.</p>
-          </div>
-
-          <div className="pricing-grid">
-            {plans.map((plan) => (
-              <article key={plan.name} className={`pricing-card ${plan.accent}`}>
-                {plan.accent === 'featured' ? <span className="pill">Most Popular</span> : null}
-                <h3>{plan.name}</h3>
-                <p className="plan-subtitle">{plan.subtitle}</p>
-                <div className="price-row">
-                  <strong>{plan.price}</strong>
-                  <span>/mo</span>
+            <div className="how-grid" style={{ marginBottom: 64 }}>
+              {vendorSteps.map((step, i) => (
+                <div key={step.title} className={`how-card reveal reveal-delay-${i + 1}`}>
+                  <div className="how-step">{i + 1}</div>
+                  <div className="how-icon">{step.icon}</div>
+                  <h3>{step.title}</h3>
+                  <p>{step.desc}</p>
                 </div>
-                <ul>
-                  {plan.perks.map((perk) => (
-                    <li key={perk}>{perk}</li>
-                  ))}
-                </ul>
-                <Link className="plan-button" to="/register">
-                  Get started
-                </Link>
-              </article>
-            ))}
+              ))}
+            </div>
+
+            {/* For Customers */}
+            <div className="section-heading reveal">
+              <div className="section-label">For Customers</div>
+              <h2>Shop local, shop smart.</h2>
+              <p>Find unique products from nearby vendors and support local businesses.</p>
+            </div>
+
+            <div className="how-grid">
+              {customerSteps.map((step, i) => (
+                <div key={step.title} className={`how-card reveal reveal-delay-${i + 1}`}>
+                  <div className="how-step">{i + 1}</div>
+                  <div className="how-icon">{step.icon}</div>
+                  <h3>{step.title}</h3>
+                  <p>{step.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="section about-section" id="about">
-          <div>
-            <p className="eyebrow">Why communities love us</p>
-            <h2>Less admin. More connection.</h2>
-            <p>
-              SocietyOS brings the committee, residents and staff onto the same real-time
-              system so issues are clearer, communication is faster and operations feel calm.
-            </p>
-          </div>
-          <div className="about-card">
-            <h3>Built for modern residential communities</h3>
-            <p>
-              From gated apartments and villas to large multi-tower complexes, our platform keeps
-              every service transparent and efficient.
-            </p>
+        {/* ── CTA ── */}
+        <section className="cta-section">
+          <div className="container">
+            <h2 className="reveal">Ready to grow your business?</h2>
+            <p className="reveal">Join thousands of vendors already selling on Vendora — it's free to start.</p>
+            <div className="cta-actions reveal">
+              <Link className="btn btn-blue-lg" to="/register/seller">Start Selling Free 🏪</Link>
+              <Link className="btn btn-outline-lg" to="/register/buyer">Browse as Customer 🛍️</Link>
+            </div>
           </div>
         </section>
       </main>
 
-      <footer className="landing-footer" id="contact">
-        <div className="brand footer-brand">
-          <span className="brand-mark">S</span>
-          <span>
-            <strong>SocietyOS</strong>
-            <small>Management Suite</small>
-          </span>
+      {/* ── Footer ── */}
+      <footer className="lp-footer" id="contact">
+        <div className="lp-footer-inner">
+          <a className="lp-brand" href="#top">
+            <img src="/vendora-logo.jpg" alt="Vendora" className="lp-brand-logo" />
+          </a>
+          <span className="lp-footer-copy">© 2026 Vendora. All rights reserved.</span>
+          <div className="lp-footer-links">
+            <a href="#categories">Explore</a>
+            <a href="#vendors">Vendors</a>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Register</Link>
+          </div>
         </div>
-        <p>© 2026 SocietyOS. All rights reserved.</p>
       </footer>
     </div>
   );
 }
-
-export default LandingPage;

@@ -1,0 +1,45 @@
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import './LandingPage.css';
+
+const spaces = [
+  { title: 'Home & living', copy: 'Discover local essentials', icon: '⌂', tone: 'peach' },
+  { title: 'Fashion', copy: 'Find independent style', icon: '✦', tone: 'blue' },
+  { title: 'Handcrafted', copy: 'Shop makers near you', icon: '✺', tone: 'lilac' },
+];
+
+function LandingPage() {
+  const { currentUser, userProfile, userRole } = useAuth();
+  const name = userProfile?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0];
+  const dashboard = userRole === 'vendor' ? '/seller-dashboard' : '/buyer-dashboard';
+
+  return <div className="society-home">
+    <header className="home-nav">
+      <nav><a href="#spaces">Explore</a><a href="#how">Start selling</a></nav>
+      <div className="home-actions">
+        {currentUser && name ? <Link className="button button-light" to={dashboard}>{name}</Link> : <Link className="button button-light" to="/login">Login</Link>}
+        <Link className="button button-dark" to="/register">Get started</Link>
+      </div>
+    </header>
+
+    <main>
+      <section className="home-hero">
+        <div className="hero-orbit orbit-one" /><div className="hero-orbit orbit-two" />
+        <p className="home-kicker">Marketplace for local businesses</p>
+        <h1>Your business.<br /><em>Your store. Your rules.</em></h1>
+        <p className="hero-lead">Discover remarkable local products and give independent sellers a home to grow.</p>
+        <div className="home-search"><span>⌕</span><span>Search for products or shops</span></div>
+        <div className="hero-cta"><Link className="button button-dark" to="/register">Explore Vendora</Link><Link className="text-link" to="/login">Login to continue →</Link></div>
+      </section>
+
+      <section className="space-section" id="spaces">
+        <div className="section-top"><div><p className="home-kicker">Made for every member</p><h2>A better way to live together.</h2></div><Link to="/register" className="text-link">Explore all →</Link></div>
+        <div className="space-grid">{spaces.map((space) => <article className={`space-card ${space.tone}`} key={space.title}><span className="space-icon">{space.icon}</span><div><h3>{space.title}</h3><p>{space.copy}</p></div></article>)}</div>
+      </section>
+
+      <section className="how-section" id="how"><p className="home-kicker">Everything connected</p><h2>Less chasing. More living.</h2><div className="benefit-grid"><p><b>Notices</b> Keep every update visible.</p><p><b>Bookings</b> Reserve amenities in seconds.</p><p><b>Support</b> Track every request with ease.</p></div></section>
+    </main>
+  </div>;
+}
+
+export default LandingPage;

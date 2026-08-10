@@ -3,14 +3,13 @@ import { User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'vendor' | 'customer';
 
 export interface UserProfile {
   uid: string;
   email: string;
   displayName?: string;
   role: UserRole;
-  flatNo?: string;
   createdAt?: string;
 }
 
@@ -47,22 +46,36 @@ const withTimeout = <T,>(promise: Promise<T>, timeoutMs = 10000): Promise<T> => 
   ]);
 };
 
+const VALID_ROLES: UserRole[] = ['admin', 'vendor', 'customer'];
+
+const isValidRole = (role: any): role is UserRole => VALID_ROLES.includes(role);
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const saveUserRole = async (user: User, role: UserRole, displayName?: string, awaitFirestore = false) => {
+  const saveUserRole = async (
+    user: User,
+    role: UserRole,
+    displayName?: string,
+    awaitFirestore = false
+  ) => {
     const profile: UserProfile = {
       uid: user.uid,
       email: user.email || '',
-      displayName: displayName || userProfile?.displayName || user.displayName || user.email?.split('@')[0] || 'User',
-      role: role,
+      displayName:
+        displayName ||
+        userProfile?.displayName ||
+        user.displayName ||
+        user.email?.split('@')[0] ||
+        'User',
+      role,
       createdAt: userProfile?.createdAt || new Date().toISOString(),
     };
 
-    // Instant local cache save so login can still work when Firestore is slow
+    // Instant local cache so login still works when Firestore is slow
     try {
       localStorage.setItem(`user_role_${user.uid}`, role);
       localStorage.setItem(`user_profile_${user.uid}`, JSON.stringify(profile));
@@ -77,7 +90,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savePromise = setDoc(userDocRef, profile);
 
     if (awaitFirestore) {
-      await withTimeout(savePromise);
+      try {
+        await withTimeout(savePromise);
+      } catch (err) {
+        console.warn('Firestore save failed; using local cache:', err);
+      }
     } else {
       savePromise.catch((err) => {
         console.warn('Background Firestore save failed. Local cache still available:', err);
@@ -91,18 +108,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const fetchAndSetUserRole = async (user: User): Promise<UserRole | null> => {
-    const cachedRole = localStorage.getItem(`user_role_${user.uid}`) as UserRole | null;
+    const cachedRole = localStorage.getItem(`user_role_${user.uid}`);
     const cachedProfile = localStorage.getItem(`user_profile_${user.uid}`);
     const userDocRef = doc(db, 'users', user.uid);
 
-    // 1. Try fetching from Firestore first to avoid stale local cache causing wrong redirects.
+    // 1. Try Firestore first to avoid stale local cache
     try {
       const userDocSnap = await withTimeout(getDoc(userDocRef));
       if (userDocSnap.exists()) {
         const data = userDocSnap.data() as UserProfile;
         const role = data.role;
-        if (role !== 'admin' && role !== 'user') {
-          throw new Error('Your account has an invalid role.');
+        if (!isValidRole(role)) {
+          throw new Error(`Invalid role in Firestore: ${role}`);
         }
         setUserRole(role);
         setUserProfile({ ...data, uid: user.uid });
@@ -114,8 +131,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn('Firestore fetch timed out or offline, using fallback:', err);
     }
 
-    // 2. Use a role cached by a previous verified login only when Firestore is unavailable.
-    if (cachedRole === 'admin' || cachedRole === 'user') {
+    // 2. Fall back to local cache when Firestore is unavailable
+    if (isValidRole(cachedRole)) {
       setUserRole(cachedRole);
       if (cachedProfile) {
         try {
@@ -125,7 +142,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return cachedRole;
     }
 
-    // 3. Never infer privileges from an email address. The user must have a role record.
     setUserRole(null);
     setUserProfile(null);
     return null;
@@ -143,14 +159,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(true);
         fetchAndSetUserRole(user)
           .then(() => {
-            if (authStateChangeCountRef.current === authCycle) {
-              setLoading(false);
-            }
+            if (authStateChangeCountRef.current === authCycle) setLoading(false);
           })
           .catch(() => {
-            if (authStateChangeCountRef.current === authCycle) {
-              setLoading(false);
-            }
+            if (authStateChangeCountRef.current === authCycle) setLoading(false);
           });
       } else {
         setUserRole(null);

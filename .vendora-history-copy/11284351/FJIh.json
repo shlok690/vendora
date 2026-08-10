@@ -1,0 +1,14 @@
+{
+    "C_Cpp.default.compilerPath": "C:/MinGW/bin/gcc.exe",
+    "editor.fontSize": 20,
+    "workbench.editor.empty.hint": "hidden",
+    "python.defaultInterpreterPath": "c:\\Program Files\\Python313\\python.exe",
+    "lldb.suppressUpdateNotifications": true,
+    "files.autoSave": "onWindowChange",
+    "workbench.colorTheme": "Dark Modern",
+    "liveServer.settings.donotShowInfoMsg": true,
+    "git.enableSmartCommit": true,
+    "chat.viewSessions.orientation": "stacked",
+    "claudeCode.preferredLocation": "panel",
+    "workbench.startupEditor": "none"
+}

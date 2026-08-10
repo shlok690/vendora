@@ -2,274 +2,142 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../../firebase';
-import { useAuth, type UserRole } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
+import '../AuthPages.css';
 
-interface LoginPageProps {
-  loginRole?: UserRole;
-}
+const rolePath = (role: string | null) => {
+  if (role === 'admin') return '/admin-dashboard';
+  if (role === 'vendor') return '/seller-dashboard';
+  return '/buyer-dashboard';
+};
 
-const LoginPage: React.FC<LoginPageProps> = ({ loginRole }) => {
+const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [infoMessage, setInfoMessage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasRedirected, setHasRedirected] = useState(false);
+  const [info, setInfo] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [redirected, setRedirected] = useState(false);
 
   const navigate = useNavigate();
   const { currentUser, userRole, loading, getUserRole } = useAuth();
-  const isAdmin = loginRole === 'admin';
 
+  /* Auto-redirect if already logged in */
   useEffect(() => {
-    if (hasRedirected || loading) return;
+    if (redirected || loading) return;
     if (currentUser && userRole) {
-      navigate(userRole === 'admin' ? '/admin-dashboard' : '/user-dashboard', { replace: true });
-      setHasRedirected(true);
+      navigate(rolePath(userRole), { replace: true });
+      setRedirected(true);
     }
-  }, [currentUser, userRole, loading, navigate, loginRole, hasRedirected]);
+  }, [currentUser, userRole, loading, navigate, redirected]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError(null);
-    setInfoMessage(null);
-    setIsSubmitting(true);
+    setInfo(null);
+    setBusy(true);
 
-    const cleanedEmail = email.trim().toLowerCase();
-
+    const cleanEmail = email.trim().toLowerCase();
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, cleanedEmail, password);
-      const user = userCredential.user;
+      const { user } = await signInWithEmailAndPassword(auth, cleanEmail, password);
       const role = await getUserRole(user);
 
       if (!role) {
         await signOut(auth);
-        setError('Your account does not have a role yet. Please register as an admin or resident first.');
+        setError('Your account has no role assigned. Please register first.');
         return;
       }
 
-      setInfoMessage('Login successful. Redirecting you to the dashboard...');
-      navigate(role === 'admin' ? '/admin-dashboard' : '/user-dashboard', { replace: true });
+      setInfo('Login successful — redirecting…');
+      navigate(rolePath(role), { replace: true });
     } catch (err: any) {
-      console.error('Login error:', err);
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        if (password === 'ADMIN123') {
-          setError('Incorrect password. "ADMIN123" is only the admin registration passcode, not your personal account password.');
-        } else {
-          setError(`Incorrect password for ${cleanedEmail}. Please check your password or click "Forgot Password?" to reset it.`);
-        }
-      } else if (err.code === 'auth/user-not-found') {
-        setError(`No account found for ${cleanedEmail}. Please click "Create Account" below to register.`);
+      const code = err?.code ?? '';
+      if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setError('Incorrect password. Please try again or reset your password.');
+      } else if (code === 'auth/user-not-found') {
+        setError(`No account found for ${cleanEmail}. Please register first.`);
       } else {
         setError(err.message || 'Login failed. Please check your credentials.');
       }
     } finally {
-      setIsSubmitting(false);
+      setBusy(false);
     }
   };
 
   const handleForgotPassword = async () => {
-    const cleanedEmail = email.trim().toLowerCase();
-    if (!cleanedEmail) {
-      setError('Please enter your email address first to reset your password.');
-      return;
-    }
-    setError(null);
-    setInfoMessage(null);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) { setError('Enter your email first to receive a reset link.'); return; }
+    setError(null); setInfo(null);
     try {
-      await sendPasswordResetEmail(auth, cleanedEmail);
-      setInfoMessage(`Password reset link sent to ${cleanedEmail}. Please check your email inbox!`);
+      await sendPasswordResetEmail(auth, cleanEmail);
+      setInfo(`Password reset link sent to ${cleanEmail}. Check your inbox!`);
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset email. Please check your email address.');
+      setError(err.message || 'Failed to send reset email.');
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'radial-gradient(circle at top, #0f172a 0%, #020617 100%)',
-        color: '#f8fafc',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem 1rem',
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '440px',
-          backgroundColor: 'rgba(30, 41, 59, 0.7)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '24px',
-          padding: '2.5rem',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div
-            style={{
-              width: '54px',
-              height: '54px',
-              margin: '0 auto 1rem auto',
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.5rem',
-              boxShadow: '0 8px 20px rgba(14, 165, 233, 0.4)',
-            }}
-          >
-            {isAdmin ? '🛡️' : '👤'}
-          </div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, color: '#fff' }}>
-            {isAdmin ? 'Admin Login' : 'User Login'}
-          </h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '0.4rem' }}>
-            {isAdmin
-              ? 'Sign in to access the administration dashboard.'
-              : 'Sign in to access your resident dashboard.'}
-          </p>
+    <main className="auth-page">
+      <div className="auth-card">
+        {/* Logo */}
+        <div className="auth-logo">
+          <img src="/vendora-logo.jpg" alt="Vendora" className="auth-logo-img" />
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-          <Link
-            to="/login/admin"
-            style={{
-              textDecoration: 'none',
-              color: isAdmin ? '#fff' : '#38bdf8',
-              fontWeight: 600,
-              background: isAdmin ? 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)' : 'transparent',
-              padding: '0.5rem 0.9rem',
-              borderRadius: '999px',
-            }}
-          >
-            Admin
-          </Link>
-          <Link
-            to="/login/user"
-            style={{
-              textDecoration: 'none',
-              color: !isAdmin ? '#fff' : '#38bdf8',
-              fontWeight: 600,
-              background: !isAdmin ? 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)' : 'transparent',
-              padding: '0.5rem 0.9rem',
-              borderRadius: '999px',
-            }}
-          >
-            User
-          </Link>
-        </div>
+        <h1 className="auth-title">Welcome back</h1>
+        <p className="auth-subtitle">
+          Sign in to your Vendora account to continue.
+        </p>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-              Email Address
-            </label>
+        {info  && <div className="auth-success">{info}</div>}
+        {error && <div className="auth-error">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="email">Email address</label>
             <input
+              id="email"
+              className="auth-input"
               type="email"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
               required
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                borderRadius: '10px',
-                border: '1px solid #334155',
-                backgroundColor: '#0f172a',
-                color: '#fff',
-                fontSize: '0.95rem',
-                outline: 'none',
-              }}
+              autoComplete="email"
             />
           </div>
 
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#cbd5e1' }}>
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#38bdf8',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  padding: 0,
-                }}
-              >
-                Forgot Password?
+          <div className="auth-field">
+            <div className="auth-pw-row">
+              <label className="auth-label" htmlFor="password">Password</label>
+              <button type="button" className="auth-forgot" onClick={handleForgotPassword}>
+                Forgot password?
               </button>
             </div>
             <input
+              id="password"
+              className="auth-input"
               type="password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
               required
               minLength={6}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                borderRadius: '10px',
-                border: '1px solid #334155',
-                backgroundColor: '#0f172a',
-                color: '#fff',
-                fontSize: '0.95rem',
-                outline: 'none',
-              }}
+              autoComplete="current-password"
             />
           </div>
 
-          {infoMessage && (
-            <div style={{ padding: '0.75rem', backgroundColor: '#22c55e20', border: '1px solid #22c55e50', borderRadius: '10px', color: '#4ade80', fontSize: '0.85rem' }}>
-              {infoMessage}
-            </div>
-          )}
-
-          {error && (
-            <div style={{ padding: '0.75rem', backgroundColor: '#ef444420', border: '1px solid #ef444450', borderRadius: '10px', color: '#f87171', fontSize: '0.85rem' }}>
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{
-              padding: '0.85rem',
-              borderRadius: '12px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: '1rem',
-              cursor: 'pointer',
-              marginTop: '0.5rem',
-              boxShadow: '0 4px 15px rgba(14, 165, 233, 0.4)',
-              transition: 'all 0.2s',
-            }}
-          >
-            {isSubmitting ? 'Authenticating…' : 'Sign In 🚀'}
+          <button className="auth-submit" type="submit" disabled={busy}>
+            {busy ? 'Signing in…' : 'Login'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
+        <p className="auth-footer-note">
           Don't have an account?{' '}
-          <Link to="/register" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 600 }}>
-            Create Account
-          </Link>
-        </div>
+          <Link to="/register">Register</Link>
+        </p>
       </div>
-    </div>
+    </main>
   );
 };
 
