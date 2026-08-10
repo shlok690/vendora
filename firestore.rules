@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Deploy: firebase deploy --only firestore:rules
+// Or paste into: Firebase Console -> Firestore Database -> Rules -> Publish
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The only collection the Vendora client reads or writes (see src/context/AuthContext.tsx).
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // A user may only ever write a role Vendora actually supports, into their own doc.
+      // This is what stops an 'admin' (or any other) role from being written back —
+      // client-side validation alone can't enforce this, only rules can.
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.role in ['vendor', 'customer'];
+
+      allow delete: if false;
+    }
+
+    // Nothing else is used by the app today — deny by default rather than
+    // leaving the database in Firebase's wide-open "test mode" default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

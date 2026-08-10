@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../../components/Logo';
 
 const CustomerExplorePage: React.FC = () => {
   const { userProfile, logout } = useAuth();
@@ -30,7 +31,7 @@ const CustomerExplorePage: React.FC = () => {
       {/* Header */}
       <header style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '88px', position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/vendora-logo.jpg" alt="Vendora" style={{ height: 64, width: 'auto' }} />
+          <Logo size={24} />
           <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 6 }}>Marketplace</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

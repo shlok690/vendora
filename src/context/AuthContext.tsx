@@ -3,7 +3,16 @@ import { User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
-export type UserRole = 'admin' | 'vendor' | 'customer';
+export type UserRole = 'vendor' | 'customer';
+
+export interface VendorShopProfile {
+  businessType: string;
+  shopName: string;
+  shopDescription: string;
+  city?: string;
+  whatsapp?: string;
+  contactEmail?: string;
+}
 
 export interface UserProfile {
   uid: string;
@@ -11,6 +20,7 @@ export interface UserProfile {
   displayName?: string;
   role: UserRole;
   createdAt?: string;
+  shopProfile?: VendorShopProfile;
 }
 
 interface AuthContextType {
@@ -22,6 +32,7 @@ interface AuthContextType {
   getUserRole: (user: User) => Promise<UserRole | null>;
   saveUserRole: (user: User, role: UserRole, displayName?: string, awaitFirestore?: boolean) => Promise<void>;
   switchRole: (newRole: UserRole) => Promise<void>;
+  saveVendorShopProfile: (shopProfile: VendorShopProfile) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -33,6 +44,7 @@ const AuthContext = createContext<AuthContextType>({
   getUserRole: async () => null,
   saveUserRole: async () => {},
   switchRole: async () => {},
+  saveVendorShopProfile: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -46,9 +58,18 @@ const withTimeout = <T,>(promise: Promise<T>, timeoutMs = 10000): Promise<T> => 
   ]);
 };
 
-const VALID_ROLES: UserRole[] = ['admin', 'vendor', 'customer'];
+const VALID_ROLES: UserRole[] = ['vendor', 'customer'];
 
 const isValidRole = (role: any): role is UserRole => VALID_ROLES.includes(role);
+
+const clearCachedRole = (uid: string) => {
+  try {
+    localStorage.removeItem(`user_role_${uid}`);
+    localStorage.removeItem(`user_profile_${uid}`);
+  } catch (e) {
+    console.warn('localStorage clear warning:', e);
+  }
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -62,6 +83,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     displayName?: string,
     awaitFirestore = false
   ) => {
+    // Belt-and-suspenders: the real boundary is the Firestore rule requiring
+    // role in ['vendor', 'customer'] on every write (see firestore.rules) —
+    // this just fails fast instead of attempting a write Firestore would reject.
+    if (!isValidRole(role)) {
+      throw new Error(`Refusing to save unrecognized role: ${role}`);
+    }
+
     const profile: UserProfile = {
       uid: user.uid,
       email: user.email || '',
@@ -107,6 +135,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await saveUserRole(currentUser, newRole);
   };
 
+  const saveVendorShopProfile = async (shopProfile: VendorShopProfile) => {
+    if (!currentUser) return;
+
+    const updatedProfile: UserProfile = {
+      uid: currentUser.uid,
+      email: currentUser.email || userProfile?.email || '',
+      displayName: userProfile?.displayName,
+      role: 'vendor',
+      createdAt: userProfile?.createdAt,
+      shopProfile,
+    };
+
+    // Instant local cache, same pattern as saveUserRole
+    try {
+      localStorage.setItem(`user_profile_${currentUser.uid}`, JSON.stringify(updatedProfile));
+    } catch (e) {
+      console.warn('localStorage save warning:', e);
+    }
+
+    setUserProfile(updatedProfile);
+
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    try {
+      await withTimeout(setDoc(userDocRef, { shopProfile }, { merge: true }));
+    } catch (err) {
+      console.warn('Firestore shop profile save failed; using local cache:', err);
+    }
+  };
+
   const fetchAndSetUserRole = async (user: User): Promise<UserRole | null> => {
     const cachedRole = localStorage.getItem(`user_role_${user.uid}`);
     const cachedProfile = localStorage.getItem(`user_profile_${user.uid}`);
@@ -118,15 +175,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (userDocSnap.exists()) {
         const data = userDocSnap.data() as UserProfile;
         const role = data.role;
-        if (!isValidRole(role)) {
-          throw new Error(`Invalid role in Firestore: ${role}`);
+        if (isValidRole(role)) {
+          setUserRole(role);
+          setUserProfile({ ...data, uid: user.uid });
+          localStorage.setItem(`user_role_${user.uid}`, role);
+          localStorage.setItem(`user_profile_${user.uid}`, JSON.stringify({ ...data, uid: user.uid }));
+          return role;
         }
-        setUserRole(role);
-        setUserProfile({ ...data, uid: user.uid });
-        localStorage.setItem(`user_role_${user.uid}`, role);
-        localStorage.setItem(`user_profile_${user.uid}`, JSON.stringify({ ...data, uid: user.uid }));
-        return role;
+
+        // Firestore is reachable and has an explicit answer: this account carries a
+        // role Vendora doesn't recognize (e.g. a leftover 'admin' account from the
+        // pre-Vendora product). Firestore is authoritative here, not a cache miss —
+        // reject outright instead of falling back to a possibly-stale local cache,
+        // and sign the session out so it doesn't silently pass as logged in.
+        console.warn(`Rejecting unrecognized role for ${user.uid}: ${role}`);
+        clearCachedRole(user.uid);
+        setUserRole(null);
+        setUserProfile(null);
+        try {
+          await signOut(auth);
+        } catch (signOutErr) {
+          console.warn('Sign-out of rejected session failed:', signOutErr);
+        }
+        return null;
       }
+      // No Firestore doc yet — likely a registration still in flight
+      // (saveUserRole's Firestore write hasn't landed). Fall through to the
+      // local-cache check below, same as when Firestore is unreachable.
     } catch (err) {
       console.warn('Firestore fetch timed out or offline, using fallback:', err);
     }
@@ -196,6 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         getUserRole,
         saveUserRole,
         switchRole,
+        saveVendorShopProfile,
       }}
     >
       {!loading && children}

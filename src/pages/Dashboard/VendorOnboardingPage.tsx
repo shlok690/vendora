@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import VendorOnboardingWizard from './VendorOnboardingWizard';
+import Logo from '../../components/Logo';
 
 const VendorOnboardingPage: React.FC = () => {
   const { userProfile, logout } = useAuth();
@@ -8,6 +10,10 @@ const VendorOnboardingPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'analytics'>('overview');
 
   const handleLogout = async () => { await logout(); navigate('/login'); };
+
+  if (!userProfile?.shopProfile) {
+    return <VendorOnboardingWizard />;
+  }
 
   const tabs = [
     { id: 'overview',  label: '🏪 Store Overview' },
@@ -21,7 +27,7 @@ const VendorOnboardingPage: React.FC = () => {
       {/* Header */}
       <header style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '88px', position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/vendora-logo.jpg" alt="Vendora" style={{ height: 64, width: 'auto' }} />
+          <Logo size={24} />
           <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 6 }}>Vendor Dashboard</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

@@ -80,20 +80,6 @@
   pointer-events: none;
 }
 
-/* logo area */
-.auth-logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 28px;
-  gap: 12px;
-}
-
-.auth-logo-img {
-  height: 110px;
-  width: auto;
-}
-
 .auth-title {
   font-size: 1.55rem;
   font-weight: 800;
@@ -289,17 +275,6 @@
 }
 
 .auth-footer-note a:hover { text-decoration: underline; }
-
-/* admin passcode box */
-.auth-admin-box {
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1.5px solid #e0e7ff;
-  background: #eef2ff;
-  margin-bottom: 16px;
-}
-
-.auth-admin-box .auth-label { color: #4338ca; }
 
 /* divider */
 .auth-divider {

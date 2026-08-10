@@ -5,11 +5,7 @@ import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import '../AuthPages.css';
 
-const rolePath = (role: string | null) => {
-  if (role === 'admin') return '/admin-dashboard';
-  if (role === 'vendor') return '/seller-dashboard';
-  return '/buyer-dashboard';
-};
+const rolePath = (role: string | null) => (role === 'vendor' ? '/seller-dashboard' : '/buyer-dashboard');
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -79,11 +75,6 @@ const LoginPage: React.FC = () => {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        {/* Logo */}
-        <div className="auth-logo">
-          <img src="/vendora-logo.jpg" alt="Vendora" className="auth-logo-img" />
-        </div>
-
         <h1 className="auth-title">Welcome back</h1>
         <p className="auth-subtitle">
           Sign in to your Vendora account to continue.
