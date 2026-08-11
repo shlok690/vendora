@@ -1,0 +1,120 @@
+/* =========================================================
+   Vendora — Shared Dashboard Styles (responsive layout)
+   Used by CustomerExplorePage, VendorOnboardingPage and
+   VendorOnboardingWizard.
+   ========================================================= */
+
+/* ── Header ── */
+.dash-header {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.dash-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ── Sidebar + main layout ── */
+.dash-layout {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  gap: 1.75rem;
+}
+
+.dash-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.dash-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Tables ── */
+.dash-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.dash-table-wrap table { min-width: 560px; }
+
+/* ── 2-column stat/field grids ── */
+.dash-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ── Vendor onboarding wizard ── */
+.wizard-page {
+  padding: 2rem 1.5rem;
+}
+
+.wizard-card {
+  max-width: 620px;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(15,23,42,.06);
+}
+
+.wizard-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 2rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .dash-layout { flex-direction: column; padding: 1.5rem 1rem; gap: 1.25rem; }
+  .dash-sidebar { width: 100%; }
+  .dash-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .dash-tabs button { flex-shrink: 0; white-space: nowrap; }
+}
+
+@media (max-width: 640px) {
+  .dash-header {
+    height: auto;
+    min-height: 64px;
+    padding: 12px 1rem;
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .dash-header-actions { flex-wrap: wrap; gap: 0.5rem; }
+  .dash-header-subtitle { display: none; }
+}
+
+@media (max-width: 480px) {
+  .dash-header-username { display: none; }
+  .dash-2col { grid-template-columns: 1fr; }
+  .wizard-2col { grid-template-columns: 1fr; margin-bottom: 1.5rem; }
+  .wizard-card { padding: 1.75rem 1.25rem; }
+  .wizard-page { padding: 1.5rem 1rem; }
+}

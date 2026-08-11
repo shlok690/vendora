@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import VendorOnboardingWizard from './VendorOnboardingWizard';
 import Logo from '../../components/Logo';
+import './Dashboard.css';
 
 const VendorOnboardingPage: React.FC = () => {
   const { userProfile, logout } = useAuth();
@@ -25,23 +26,23 @@ const VendorOnboardingPage: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #eef0f8 0%, #f8fafc 55%)', fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Header */}
-      <header style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '88px', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <header className="dash-header">
+        <div className="dash-header-brand">
           <Logo size={24} />
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 6 }}>Vendor Dashboard</span>
+          <span className="dash-header-subtitle" style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 6 }}>Vendor Dashboard</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#334155' }}>{userProfile?.displayName || userProfile?.email}</span>
+        <div className="dash-header-actions">
+          <span className="dash-header-username" style={{ fontSize: '0.88rem', fontWeight: 600, color: '#334155' }}>{userProfile?.displayName || userProfile?.email}</span>
           <span style={{ fontSize: '0.72rem', background: '#eef0f8', color: '#2b2f4d', border: '1px solid #d8dbee', padding: '3px 10px', borderRadius: 9999, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>Vendor</span>
           <button onClick={() => navigate('/')} style={{ padding: '7px 14px', borderRadius: 8, background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#475569', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>🌐 Main Site</button>
           <button onClick={handleLogout} style={{ padding: '7px 14px', borderRadius: 8, background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>Logout</button>
         </div>
       </header>
 
-      <div style={{ display: 'flex', maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem', gap: '1.75rem' }}>
+      <div className="dash-layout">
         {/* Sidebar */}
-        <aside style={{ width: 220, flexShrink: 0 }}>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <aside className="dash-sidebar">
+          <nav className="dash-tabs">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -118,6 +119,7 @@ const VendorOnboardingPage: React.FC = () => {
                 <button style={{ padding: '9px 18px', borderRadius: 10, border: 'none', background: '#2b2f4d', color: '#fff', fontWeight: 700, fontSize: '0.87rem', cursor: 'pointer' }}>+ Add Product</button>
               </div>
               <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden' }}>
+                <div className="dash-table-wrap">
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
@@ -144,6 +146,7 @@ const VendorOnboardingPage: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           )}
@@ -152,6 +155,7 @@ const VendorOnboardingPage: React.FC = () => {
             <div>
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '1.5rem', color: '#0f172a' }}>Orders</h2>
               <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden' }}>
+                <div className="dash-table-wrap">
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
@@ -178,6 +182,7 @@ const VendorOnboardingPage: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           )}
@@ -187,7 +192,7 @@ const VendorOnboardingPage: React.FC = () => {
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '1.5rem', color: '#0f172a' }}>Analytics</h2>
               <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.5rem' }}>
                 <p style={{ color: '#64748b', marginBottom: '1rem' }}>Store performance overview for this month.</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="dash-2col">
                   {[
                     { label: 'Store Views',     value: '1,842', icon: '👁️' },
                     { label: 'Product Clicks',  value: '634',   icon: '🖱️' },

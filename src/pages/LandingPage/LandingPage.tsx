@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import WaveBackground from '../../components/WaveBackground';
 import Logo from '../../components/Logo';
@@ -67,6 +67,7 @@ function useHeaderScroll() {
 export default function LandingPage() {
   const { currentUser, userProfile, userRole } = useAuth();
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   const displayName = userProfile?.displayName ?? currentUser?.email?.split('@')[0];
   const dashPath = userRole === 'vendor' ? '/seller-dashboard' : '/buyer-dashboard';
@@ -77,6 +78,11 @@ export default function LandingPage() {
   const scrollToTop = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToProducts = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(search.trim() ? `/products?q=${encodeURIComponent(search.trim())}` : '/products');
   };
 
   return (
@@ -119,7 +125,7 @@ export default function LandingPage() {
             </p>
 
             {/* Search */}
-            <div className="hero-search">
+            <form className="hero-search" onSubmit={goToProducts}>
               <span className="hero-search-icon">🔍</span>
               <input
                 type="text"
@@ -127,17 +133,17 @@ export default function LandingPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <button className="hero-search-btn">Search</button>
-            </div>
+              <button type="submit" className="hero-search-btn">Search</button>
+            </form>
 
             {/* Categories */}
             <div className="categories" id="categories">
               {categories.map((cat) => (
-                <div key={cat.label} className="cat-card">
+                <Link key={cat.label} to={`/products?category=${encodeURIComponent(cat.label)}`} className="cat-card">
                   <img src={cat.image} alt={cat.label} loading="lazy" />
                   <div className="cat-card-overlay" />
                   <span className="cat-card-label">{cat.label}</span>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

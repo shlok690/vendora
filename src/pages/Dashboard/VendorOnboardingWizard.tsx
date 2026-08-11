@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth, type VendorShopProfile } from '../../context/AuthContext';
+import './Dashboard.css';
 
 const BUSINESS_TYPES = [
   { label: 'Furniture',     icon: '🪑' },
@@ -10,16 +11,6 @@ const BUSINESS_TYPES = [
   { label: 'Jewellery',     icon: '💍' },
   { label: 'Other',         icon: '🛍️' },
 ];
-
-const card: React.CSSProperties = {
-  maxWidth: 620,
-  width: '100%',
-  background: '#fff',
-  border: '1px solid #e2e8f0',
-  borderRadius: 20,
-  padding: '2.5rem',
-  boxShadow: '0 10px 30px rgba(15,23,42,.06)',
-};
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -107,8 +98,8 @@ const VendorOnboardingWizard: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #eef0f8 0%, #f8fafc 55%)', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1.5rem' }}>
-      <div style={card}>
+    <div className="wizard-page" style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #eef0f8 0%, #f8fafc 55%)', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="wizard-card">
         <StepIndicator step={step} />
 
         {step === 1 && (
@@ -201,7 +192,7 @@ const VendorOnboardingWizard: React.FC = () => {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: '2rem' }}>
+            <div className="wizard-2col">
               <div>
                 <label style={labelStyle} htmlFor="whatsapp">WhatsApp Number</label>
                 <input

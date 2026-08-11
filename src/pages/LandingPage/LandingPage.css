@@ -206,11 +206,13 @@ body {
 }
 
 .cat-card {
+  display: block;
   border-radius: var(--radius-md); overflow: hidden;
   position: relative; cursor: pointer;
   box-shadow: var(--shadow-md);
   transition: transform .25s, box-shadow .25s;
   aspect-ratio: 4/3;
+  text-decoration: none; color: inherit;
 }
 .cat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
 

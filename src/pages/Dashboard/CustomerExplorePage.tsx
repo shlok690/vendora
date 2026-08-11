@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/Logo';
+import './Dashboard.css';
 
 const CustomerExplorePage: React.FC = () => {
   const { userProfile, logout } = useAuth();
@@ -29,23 +30,23 @@ const CustomerExplorePage: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #eef0f8 0%, #f8fafc 55%)', fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Header */}
-      <header style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '88px', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <header className="dash-header">
+        <div className="dash-header-brand">
           <Logo size={24} />
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 6 }}>Marketplace</span>
+          <span className="dash-header-subtitle" style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 6 }}>Marketplace</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#334155' }}>{userProfile?.displayName || userProfile?.email}</span>
+        <div className="dash-header-actions">
+          <span className="dash-header-username" style={{ fontSize: '0.88rem', fontWeight: 600, color: '#334155' }}>{userProfile?.displayName || userProfile?.email}</span>
           <span style={{ fontSize: '0.72rem', background: '#eef0f8', color: '#2b2f4d', border: '1px solid #d8dbee', padding: '3px 10px', borderRadius: 9999, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>Customer</span>
           <button onClick={() => navigate('/')} style={{ padding: '7px 14px', borderRadius: 8, background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#475569', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>🌐 Main Site</button>
           <button onClick={handleLogout} style={{ padding: '7px 14px', borderRadius: 8, background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>Logout</button>
         </div>
       </header>
 
-      <div style={{ display: 'flex', maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem', gap: '1.75rem' }}>
+      <div className="dash-layout">
         {/* Sidebar */}
-        <aside style={{ width: 220, flexShrink: 0 }}>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <aside className="dash-sidebar">
+          <nav className="dash-tabs">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -132,7 +133,7 @@ const CustomerExplorePage: React.FC = () => {
                 ].map((o, i) => (
                   <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '1rem 1.25rem', borderBottom: i < 1 ? '1px solid #f1f5f9' : 'none' }}>
                     <div style={{ fontSize: '1.6rem' }}>📦</div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.9rem' }}>{o.product}</div>
                       <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{o.vendor} · {o.date}</div>
                     </div>

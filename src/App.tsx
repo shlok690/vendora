@@ -6,14 +6,16 @@ import LoginPage from './pages/Login/LoginPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import VendorOnboardingPage from './pages/Dashboard/VendorOnboardingPage';
 import CustomerExplorePage from './pages/Dashboard/CustomerExplorePage';
+import ProductsPage from './pages/Products/ProductsPage';
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
         {/* Public routes */}
-        <Route path="/"       element={<LandingPage />} />
-        <Route path="/login"  element={<LoginPage />} />
+        <Route path="/"         element={<LandingPage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/login"    element={<LoginPage />} />
 
         {/* Register routes */}
         <Route path="/register"         element={<RegisterPage registerRole="customer" />} />
