@@ -20,7 +20,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
   const [busy, setBusy]           = useState(false);
 
   const navigate = useNavigate();
-  const { saveUserRole } = useAuth();
+  const { saveUserRole, logout } = useAuth();
 
   useEffect(() => { setRole(registerRole); }, [registerRole]);
 
@@ -39,7 +39,19 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
       }
 
       await saveUserRole(user, role, name.trim(), true);
-      navigate(rolePath(role), { replace: true });
+
+      if (role === 'vendor') {
+        // Vendors must authenticate with a fresh login before they can proceed
+        // to onboarding — registering only creates the account, it doesn't
+        // grant a session that skips straight to the dashboard.
+        await logout();
+        navigate('/login', {
+          replace: true,
+          state: { justRegistered: true, email: email.trim() },
+        });
+      } else {
+        navigate(rolePath(role), { replace: true });
+      }
     } catch (err: any) {
       const code = err?.code ?? '';
       if (code === 'auth/email-already-in-use' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {

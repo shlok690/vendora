@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -7,11 +7,21 @@ import '../AuthPages.css';
 
 const rolePath = (role: string | null) => (role === 'vendor' ? '/seller-dashboard' : '/buyer-dashboard');
 
+interface LoginNavState {
+  justRegistered?: boolean;
+  email?: string;
+}
+
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const location = useLocation();
+  const navState = (location.state as LoginNavState | null) ?? null;
+
+  const [email, setEmail] = useState(navState?.email ?? '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(
+    navState?.justRegistered ? 'Account created! Log in to continue setting up your shop.' : null
+  );
   const [busy, setBusy] = useState(false);
   const [redirected, setRedirected] = useState(false);
 

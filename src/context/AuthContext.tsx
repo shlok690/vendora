@@ -5,6 +5,8 @@ import { auth, db } from '../firebase';
 
 export type UserRole = 'vendor' | 'customer';
 
+export type ShopLayoutStyle = 'gallery' | 'logo' | 'banner';
+
 export interface VendorShopProfile {
   businessType: string;
   shopName: string;
@@ -12,6 +14,10 @@ export interface VendorShopProfile {
   city?: string;
   whatsapp?: string;
   contactEmail?: string;
+  themeColor?: string;
+  layoutStyle?: ShopLayoutStyle;
+  logoDataUrl?: string;
+  bannerDataUrl?: string;
 }
 
 export interface UserProfile {
