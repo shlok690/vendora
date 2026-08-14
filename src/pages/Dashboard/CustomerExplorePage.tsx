@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/Logo';
 import './Dashboard.css';
 
 const CustomerExplorePage: React.FC = () => {
   const { userProfile, logout } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'explore' | 'orders' | 'wishlist' | 'account'>('explore');
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const handleLogout = async () => { await logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    try {
+      await logout();
+      showToast('Logged out successfully', 'info');
+      navigate('/login');
+    } catch (err) {
+      showToast('Failed to log out. Please try again.', 'error');
+    }
+  };
 
   const tabs = [
     { id: 'explore',  label: '🛍️ Explore' },
@@ -19,13 +30,21 @@ const CustomerExplorePage: React.FC = () => {
   ];
 
   const products = [
-    { name: 'Handwoven Basket',   vendor: 'Riya Crafts',      price: '₹850',   rating: '4.9', tag: 'Handicrafts', emoji: '🧺' },
-    { name: 'Ceramic Mug Set',    vendor: 'Pottery House',    price: '₹1,200', rating: '4.8', tag: 'Home Decor',  emoji: '🫖' },
-    { name: 'Organic Turmeric',   vendor: 'Spice Trail',      price: '₹350',   rating: '4.6', tag: 'Food',        emoji: '🌿' },
-    { name: 'Linen Kurta',        vendor: 'Weavers Hub',      price: '₹1,800', rating: '4.7', tag: 'Clothing',    emoji: '👕' },
-    { name: 'Bamboo Lamp',        vendor: 'EcoLight Co.',     price: '₹2,200', rating: '4.5', tag: 'Furniture',   emoji: '🪔' },
-    { name: 'Silver Earrings',    vendor: 'GoldSmith Works',  price: '₹950',   rating: '4.8', tag: 'Jewellery',   emoji: '✨' },
+    { name: 'Handwoven Basket',   vendor: 'Riya Crafts',      price: '₹850',   rating: '4.9', tag: 'Handicrafts', image: 'https://images.unsplash.com/photo-1601330862030-1e08c703ac04?auto=format&fit=crop&w=400&q=80' },
+    { name: 'Ceramic Mug Set',    vendor: 'Pottery House',    price: '₹1,200', rating: '4.8', tag: 'Home Decor',  image: 'https://images.unsplash.com/photo-1616241673111-508b4662c707?auto=format&fit=crop&w=400&q=80' },
+    { name: 'Organic Turmeric',   vendor: 'Spice Trail',      price: '₹350',   rating: '4.6', tag: 'Food',        image: 'https://images.unsplash.com/photo-1768729341078-9da4e0ea959e?auto=format&fit=crop&w=400&q=80' },
+    { name: 'Linen Kurta',        vendor: 'Weavers Hub',      price: '₹1,800', rating: '4.7', tag: 'Clothing',    image: 'https://images.unsplash.com/photo-1727835523545-70ee992b5763?auto=format&fit=crop&w=400&q=80' },
+    { name: 'Bamboo Lamp',        vendor: 'EcoLight Co.',     price: '₹2,200', rating: '4.5', tag: 'Furniture',   image: 'https://images.unsplash.com/photo-1578678809569-1a8ead9cb802?auto=format&fit=crop&w=400&q=80' },
+    { name: 'Silver Earrings',    vendor: 'GoldSmith Works',  price: '₹950',   rating: '4.8', tag: 'Jewellery',   image: 'https://images.unsplash.com/photo-1693212793204-bcea856c75fe?auto=format&fit=crop&w=400&q=80' },
   ];
+
+  const categories = ['All', 'Handicrafts', 'Clothing', 'Food', 'Home Decor', 'Jewellery', 'Electronics'];
+  const filteredProducts = selectedCategory === 'All' ? products : products.filter((p) => p.tag === selectedCategory);
+
+  const handleSelectCategory = (cat: string) => {
+    setSelectedCategory(cat);
+    setActiveTab('explore');
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #eef0f8 0%, #f8fafc 55%)', fontFamily: "'Inter', system-ui, sans-serif" }}>
@@ -66,11 +85,27 @@ const CustomerExplorePage: React.FC = () => {
           {/* Category filter */}
           <div style={{ marginTop: '1.5rem', padding: '1.1rem', borderRadius: 12, background: '#fff', border: '1px solid #e2e8f0' }}>
             <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>Categories</div>
-            {['All', 'Handicrafts', 'Clothing', 'Food', 'Home Decor', 'Jewellery', 'Electronics'].map((cat) => (
-              <div key={cat} style={{ padding: '6px 8px', borderRadius: 8, cursor: 'pointer', fontSize: '0.84rem', color: cat === 'All' ? '#2b2f4d' : '#64748b', fontWeight: cat === 'All' ? 700 : 500, background: cat === 'All' ? '#eef0f8' : 'transparent', marginBottom: 2 }}>
-                {cat}
-              </div>
-            ))}
+            {categories.map((cat) => {
+              const active = cat === selectedCategory;
+              return (
+                <div
+                  key={cat}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleSelectCategory(cat)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSelectCategory(cat); }}
+                  style={{
+                    padding: '6px 8px', borderRadius: 8, cursor: 'pointer', fontSize: '0.84rem',
+                    color: active ? '#2b2f4d' : '#64748b', fontWeight: active ? 700 : 500,
+                    background: active ? '#eef0f8' : 'transparent', marginBottom: 2, transition: 'background .15s, color .15s',
+                  }}
+                  onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLDivElement).style.background = '#f8fafc'; }}
+                  onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                >
+                  {cat}
+                </div>
+              );
+            })}
           </div>
         </aside>
 
@@ -82,6 +117,12 @@ const CustomerExplorePage: React.FC = () => {
                 <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>
                   Hello, {userProfile?.displayName?.split(' ')[0] || 'there'} 👋 Explore products
                 </h2>
+                {selectedCategory !== 'All' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', color: '#64748b' }}>
+                    Filtering: <span style={{ background: '#eef0f8', color: '#2b2f4d', border: '1px solid #d8dbee', padding: '3px 10px', borderRadius: 9999, fontWeight: 700 }}>{selectedCategory}</span>
+                    <button onClick={() => setSelectedCategory('All')} style={{ border: 'none', background: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '0.82rem', textDecoration: 'underline', fontFamily: 'inherit' }}>Clear</button>
+                  </div>
+                )}
               </div>
 
               {/* Search */}
@@ -95,16 +136,25 @@ const CustomerExplorePage: React.FC = () => {
               </div>
 
               {/* Products grid */}
+              {filteredProducts.length === 0 ? (
+                <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '2.5rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔍</div>
+                  <p style={{ color: '#94a3b8', fontSize: '0.95rem' }}>No products in "{selectedCategory}" yet.</p>
+                  <button onClick={() => setSelectedCategory('All')} style={{ marginTop: '1.1rem', padding: '9px 20px', borderRadius: 10, border: 'none', background: '#2b2f4d', color: '#fff', fontWeight: 700, fontSize: '0.86rem', cursor: 'pointer', fontFamily: 'inherit' }}>View All Products</button>
+                </div>
+              ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: '1rem' }}>
-                {products.map((p) => (
+                {filteredProducts.map((p) => (
                   <div key={p.name} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 3px rgba(15,23,42,.05)', transition: 'transform .2s, box-shadow .2s' }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 30px rgba(15,23,42,.10)'; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(15,23,42,.05)'; }}
                   >
-                    {/* Product image placeholder */}
-                    <div style={{ height: 130, background: 'linear-gradient(135deg,#f1f5f9,#e2e8f0)', display: 'grid', placeItems: 'center', fontSize: '2.8rem' }}>
-                      {p.emoji}
-                    </div>
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      loading="lazy"
+                      style={{ width: '100%', height: 130, objectFit: 'cover', display: 'block', background: '#f1f5f9' }}
+                    />
                     <div style={{ padding: '14px' }}>
                       <div style={{ fontSize: '0.68rem', background: '#eef0f8', color: '#2b2f4d', border: '1px solid #d8dbee', display: 'inline-block', padding: '2px 8px', borderRadius: 9999, fontWeight: 700, marginBottom: 6 }}>{p.tag}</div>
                       <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#1e293b', marginBottom: 3 }}>{p.name}</div>
@@ -113,13 +163,17 @@ const CustomerExplorePage: React.FC = () => {
                         <span style={{ fontWeight: 900, fontSize: '1.05rem', color: '#0f172a' }}>{p.price}</span>
                         <span style={{ fontSize: '0.76rem', color: '#64748b' }}>⭐ {p.rating}</span>
                       </div>
-                      <button style={{ width: '100%', marginTop: 10, padding: '8px', borderRadius: 8, border: 'none', background: '#2b2f4d', color: '#fff', fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <button
+                        onClick={() => showToast(`Added "${p.name}" to cart`, 'success')}
+                        style={{ width: '100%', marginTop: 10, padding: '8px', borderRadius: 8, border: 'none', background: '#2b2f4d', color: '#fff', fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
                         Add to Cart 🛒
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
+              )}
             </div>
           )}
 

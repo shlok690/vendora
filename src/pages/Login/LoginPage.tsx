@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import '../AuthPages.css';
 
 const rolePath = (role: string | null) => (role === 'vendor' ? '/seller-dashboard' : '/buyer-dashboard');
@@ -27,6 +28,7 @@ const LoginPage: React.FC = () => {
 
   const navigate = useNavigate();
   const { currentUser, userRole, loading, getUserRole } = useAuth();
+  const { showToast } = useToast();
 
   /* Auto-redirect if already logged in */
   useEffect(() => {
@@ -50,7 +52,9 @@ const LoginPage: React.FC = () => {
 
       if (!role) {
         await signOut(auth);
-        setError('Your account has no role assigned. Please register first.');
+        const message = 'Your account has no role assigned. Please register first.';
+        setError(message);
+        showToast(message, 'error');
         return;
       }
 
@@ -58,13 +62,16 @@ const LoginPage: React.FC = () => {
       navigate(rolePath(role), { replace: true });
     } catch (err: any) {
       const code = err?.code ?? '';
+      let message: string;
       if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
-        setError('Incorrect password. Please try again or reset your password.');
+        message = 'Incorrect password. Please try again or reset your password.';
       } else if (code === 'auth/user-not-found') {
-        setError(`No account found for ${cleanEmail}. Please register first.`);
+        message = `No account found for ${cleanEmail}. Please register first.`;
       } else {
-        setError(err.message || 'Login failed. Please check your credentials.');
+        message = err.message || 'Login failed. Please check your credentials.';
       }
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setBusy(false);
     }
@@ -72,13 +79,20 @@ const LoginPage: React.FC = () => {
 
   const handleForgotPassword = async () => {
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) { setError('Enter your email first to receive a reset link.'); return; }
+    if (!cleanEmail) {
+      const message = 'Enter your email first to receive a reset link.';
+      setError(message);
+      showToast(message, 'error');
+      return;
+    }
     setError(null); setInfo(null);
     try {
       await sendPasswordResetEmail(auth, cleanEmail);
       setInfo(`Password reset link sent to ${cleanEmail}. Check your inbox!`);
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset email.');
+      const message = err.message || 'Failed to send reset email.';
+      setError(message);
+      showToast(message, 'error');
     }
   };
 

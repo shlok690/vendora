@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useAuth, type ShopLayoutStyle, type VendorShopProfile } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import './Dashboard.css';
 
 export const BUSINESS_TYPES = [
@@ -189,6 +190,7 @@ const ProgressBar: React.FC<{ step: number; total: number }> = ({ step, total })
 
 const VendorOnboardingWizard: React.FC = () => {
   const { currentUser, saveVendorShopProfile } = useAuth();
+  const { showToast } = useToast();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [businessType, setBusinessType] = useState('');
   const [shopName, setShopName] = useState('');
@@ -234,6 +236,9 @@ const VendorOnboardingWizard: React.FC = () => {
     };
     try {
       await saveVendorShopProfile(shopProfile);
+      showToast('Shop created! Welcome to your dashboard 🎉', 'success');
+    } catch (err) {
+      showToast('Failed to create your shop. Please try again.', 'error');
     } finally {
       setSaving(false);
     }

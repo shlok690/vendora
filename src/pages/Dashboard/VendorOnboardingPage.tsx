@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth, type VendorShopProfile } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import VendorOnboardingWizard, { BUSINESS_TYPES, CITY_SUGGESTIONS } from './VendorOnboardingWizard';
 import Logo from '../../components/Logo';
@@ -22,10 +23,19 @@ const settingsLabelStyle: React.CSSProperties = {
 
 const VendorOnboardingPage: React.FC = () => {
   const { userProfile, logout, saveVendorShopProfile } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'settings' | 'analytics'>('overview');
 
-  const handleLogout = async () => { await logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    try {
+      await logout();
+      showToast('Logged out successfully', 'info');
+      navigate('/login');
+    } catch (err) {
+      showToast('Failed to log out. Please try again.', 'error');
+    }
+  };
 
   if (!userProfile?.shopProfile) {
     return <VendorOnboardingWizard />;
@@ -264,6 +274,7 @@ const ShopSettingsForm: React.FC<{
   shopProfile: VendorShopProfile;
   saveVendorShopProfile: (p: VendorShopProfile) => Promise<void>;
 }> = ({ shopProfile, saveVendorShopProfile }) => {
+  const { showToast } = useToast();
   const [businessType, setBusinessType] = useState(shopProfile.businessType);
   const [shopName, setShopName] = useState(shopProfile.shopName);
   const [shopDescription, setShopDescription] = useState(shopProfile.shopDescription);
@@ -289,6 +300,9 @@ const ShopSettingsForm: React.FC<{
         contactEmail: contactEmail.trim() || undefined,
       });
       setSaved(true);
+      showToast('Shop settings saved', 'success');
+    } catch (err) {
+      showToast('Failed to save shop settings. Please try again.', 'error');
     } finally {
       setSaving(false);
     }

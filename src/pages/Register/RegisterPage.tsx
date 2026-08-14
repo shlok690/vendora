@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useAuth, type UserRole } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import '../AuthPages.css';
 
 interface RegisterPageProps {
@@ -21,6 +22,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
 
   const navigate = useNavigate();
   const { saveUserRole, logout } = useAuth();
+  const { showToast } = useToast();
 
   useEffect(() => { setRole(registerRole); }, [registerRole]);
 
@@ -54,13 +56,16 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
       }
     } catch (err: any) {
       const code = err?.code ?? '';
+      let message: string;
       if (code === 'auth/email-already-in-use' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
-        setError('This email is already registered. Please login instead.');
+        message = 'This email is already registered. Please login instead.';
       } else if (code === 'auth/weak-password') {
-        setError('Password must be at least 6 characters.');
+        message = 'Password must be at least 6 characters.';
       } else {
-        setError(err.message || 'Registration failed. Please try again.');
+        message = err.message || 'Registration failed. Please try again.';
       }
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setBusy(false);
     }
