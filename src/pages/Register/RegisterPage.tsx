@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 import { auth } from '../../firebase';
 import { useAuth, type UserRole } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import Icon from '../../components/Icon';
 import '../AuthPages.css';
 
 interface RegisterPageProps {
@@ -86,8 +87,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
               className={`role-btn ${role === 'vendor' ? 'active' : ''}`}
               onClick={() => setRole('vendor')}
             >
-              <span className="role-btn-icon">🏪</span>
-              <span className="role-btn-title">Sell Products</span>
+              <Icon name="storefront" size={22} strokeWidth={1.5} className="role-btn-icon" />
+              <span className="role-btn-title">Sell products</span>
               <span className="role-btn-sub">Vendor</span>
             </button>
             <button
@@ -95,8 +96,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
               className={`role-btn ${role === 'customer' ? 'active' : ''}`}
               onClick={() => setRole('customer')}
             >
-              <span className="role-btn-icon">🛍️</span>
-              <span className="role-btn-title">Buy Products</span>
+              <Icon name="cart" size={22} strokeWidth={1.5} className="role-btn-icon" />
+              <span className="role-btn-title">Buy products</span>
               <span className="role-btn-sub">Customer</span>
             </button>
           </div>

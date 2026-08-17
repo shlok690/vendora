@@ -2,23 +2,24 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../../components/Logo';
+import Icon from '../../components/Icon';
 import './ProductsPage.css';
 
 const CATEGORIES = ['All', 'Furniture', 'Clothing', 'Handicrafts', 'Electronics', 'Food & Spices', 'Jewellery'];
 
 const PRODUCTS = [
-  { name: 'Bamboo Lamp',       vendor: 'EcoLight Co.',    price: '₹2,200', rating: '4.5', category: 'Furniture',     image: 'https://images.unsplash.com/photo-1578678809569-1a8ead9cb802?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Wooden Stool',      vendor: 'Oakcraft',        price: '₹1,350', rating: '4.6', category: 'Furniture',     image: 'https://images.unsplash.com/photo-1634798245965-03669c757183?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Linen Kurta',       vendor: 'Weavers Hub',     price: '₹1,800', rating: '4.7', category: 'Clothing',      image: 'https://images.unsplash.com/photo-1727835523545-70ee992b5763?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Wool Scarf',        vendor: 'Weavers Hub',     price: '₹650',   rating: '4.4', category: 'Clothing',      image: 'https://images.unsplash.com/photo-1609803384069-19f3e5a70e75?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Handwoven Basket',  vendor: 'Riya Crafts',     price: '₹850',   rating: '4.9', category: 'Handicrafts',   image: 'https://images.unsplash.com/photo-1601330862030-1e08c703ac04?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Ceramic Mug Set',   vendor: 'Pottery House',   price: '₹1,200', rating: '4.8', category: 'Handicrafts',   image: 'https://images.unsplash.com/photo-1616241673111-508b4662c707?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Wireless Earbuds',  vendor: 'TechNook Store',  price: '₹1,499', rating: '4.5', category: 'Electronics',   image: 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Smart Plug',        vendor: 'TechNook Store',  price: '₹799',   rating: '4.3', category: 'Electronics',   image: 'https://images.unsplash.com/photo-1586943029669-98ae685c5c4c?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Organic Turmeric',  vendor: 'Spice Trail',     price: '₹350',   rating: '4.6', category: 'Food & Spices', image: 'https://images.unsplash.com/photo-1768729341078-9da4e0ea959e?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Wild Honey',        vendor: 'Spice Trail',     price: '₹480',   rating: '4.7', category: 'Food & Spices', image: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Silver Earrings',   vendor: 'GoldSmith Works', price: '₹950',   rating: '4.8', category: 'Jewellery',     image: 'https://images.unsplash.com/photo-1693212793204-bcea856c75fe?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Gold Ring',         vendor: 'GoldSmith Works', price: '₹5,200', rating: '4.9', category: 'Jewellery',     image: 'https://images.unsplash.com/photo-1598560917807-1bae44bd2be8?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Bamboo Lamp',       vendor: 'EcoLight Co.',    price: '₹2,200', category: 'Furniture',     image: 'https://images.unsplash.com/photo-1578678809569-1a8ead9cb802?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Wooden Stool',      vendor: 'Oakcraft',        price: '₹1,350', category: 'Furniture',     image: 'https://images.unsplash.com/photo-1634798245965-03669c757183?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Linen Kurta',       vendor: 'Weavers Hub',     price: '₹1,800', category: 'Clothing',      image: 'https://images.unsplash.com/photo-1727835523545-70ee992b5763?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Wool Scarf',        vendor: 'Weavers Hub',     price: '₹650',   category: 'Clothing',      image: 'https://images.unsplash.com/photo-1609803384069-19f3e5a70e75?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Handwoven Basket',  vendor: 'Riya Crafts',     price: '₹850',   category: 'Handicrafts',   image: 'https://images.unsplash.com/photo-1601330862030-1e08c703ac04?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Ceramic Mug Set',   vendor: 'Pottery House',   price: '₹1,200', category: 'Handicrafts',   image: 'https://images.unsplash.com/photo-1616241673111-508b4662c707?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Wireless Earbuds',  vendor: 'TechNook Store',  price: '₹1,499', category: 'Electronics',   image: 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Smart Plug',        vendor: 'TechNook Store',  price: '₹799',   category: 'Electronics',   image: 'https://images.unsplash.com/photo-1586943029669-98ae685c5c4c?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Organic Turmeric',  vendor: 'Spice Trail',     price: '₹350',   category: 'Food & Spices', image: 'https://images.unsplash.com/photo-1768729341078-9da4e0ea959e?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Wild Honey',        vendor: 'Spice Trail',     price: '₹480',   category: 'Food & Spices', image: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Silver Earrings',   vendor: 'GoldSmith Works', price: '₹950',   category: 'Jewellery',     image: 'https://images.unsplash.com/photo-1693212793204-bcea856c75fe?auto=format&fit=crop&w=400&q=80' },
+  { name: 'Gold Ring',         vendor: 'GoldSmith Works', price: '₹5,200', category: 'Jewellery',     image: 'https://images.unsplash.com/photo-1598560917807-1bae44bd2be8?auto=format&fit=crop&w=400&q=80' },
 ];
 
 export default function ProductsPage() {
@@ -52,11 +53,14 @@ export default function ProductsPage() {
           </Link>
           <div className="products-header-cta">
             {currentUser && displayName ? (
-              <Link className="btn btn-blue" to={dashPath}>{displayName} →</Link>
+              <Link className="btn btn-blue" to={dashPath}>
+                {displayName}
+                <Icon name="arrowRight" size={15} strokeWidth={2} />
+              </Link>
             ) : (
               <>
                 <Link className="btn btn-ghost" to="/login">Login</Link>
-                <Link className="btn btn-solid" to="/register">Sign Up</Link>
+                <Link className="btn btn-solid" to="/register">Sign up</Link>
               </>
             )}
           </div>
@@ -65,12 +69,12 @@ export default function ProductsPage() {
 
       <main className="products-main">
         <div className="products-intro">
-          <h1>Browse all products</h1>
-          <p>Explore what local vendors are selling, by category.</p>
+          <h1>The whole market.</h1>
+          <p>Everything local vendors are selling right now, by category.</p>
         </div>
 
         <div className="products-search">
-          <span className="products-search-icon">🔍</span>
+          <Icon name="search" size={18} className="products-search-icon" />
           <input
             type="text"
             placeholder="Search products or vendors…"
@@ -104,9 +108,11 @@ export default function ProductsPage() {
                   <div className="product-card-vendor">by {p.vendor}</div>
                   <div className="product-card-meta">
                     <span className="product-card-price">{p.price}</span>
-                    <span className="product-card-rating">⭐ {p.rating}</span>
                   </div>
-                  <Link to="/register/buyer" className="product-card-btn">Shop Now</Link>
+                  <Link to="/register/buyer" className="product-card-btn">
+                    Shop now
+                    <Icon name="arrowRight" size={15} strokeWidth={2} />
+                  </Link>
                 </div>
               </div>
             ))}

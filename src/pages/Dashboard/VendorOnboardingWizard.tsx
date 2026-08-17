@@ -1,16 +1,17 @@
 import React, { useRef, useState } from 'react';
 import { useAuth, type ShopLayoutStyle, type VendorShopProfile } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import Icon, { type IconName } from '../../components/Icon';
 import './Dashboard.css';
 
-export const BUSINESS_TYPES = [
-  { label: 'Furniture',     icon: '🪑', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=300&q=80' },
-  { label: 'Clothing',      icon: '👗', image: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=300&q=80' },
-  { label: 'Electronics',   icon: '💡', image: 'https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=300&q=80' },
-  { label: 'Handicrafts',   icon: '🧶', image: 'https://images.unsplash.com/photo-1609881583302-61548332039c?auto=format&fit=crop&w=300&q=80' },
-  { label: 'Food & Spices', icon: '🌶️', image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=300&q=80' },
-  { label: 'Jewellery',     icon: '💍', image: 'https://images.unsplash.com/photo-1561828995-aa79a2db86dd?auto=format&fit=crop&w=300&q=80' },
-  { label: 'Other',         icon: '🛍️', image: 'https://images.unsplash.com/photo-1598305762558-328f599df683?auto=format&fit=crop&w=300&q=80' },
+export const BUSINESS_TYPES: { label: string; icon: IconName; image: string }[] = [
+  { label: 'Furniture',     icon: 'chair', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=300&q=80' },
+  { label: 'Clothing',      icon: 'shirt', image: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=300&q=80' },
+  { label: 'Electronics',   icon: 'device', image: 'https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=300&q=80' },
+  { label: 'Handicrafts',   icon: 'craft', image: 'https://images.unsplash.com/photo-1609881583302-61548332039c?auto=format&fit=crop&w=300&q=80' },
+  { label: 'Food & Spices', icon: 'spice', image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=300&q=80' },
+  { label: 'Jewellery',     icon: 'gem', image: 'https://images.unsplash.com/photo-1561828995-aa79a2db86dd?auto=format&fit=crop&w=300&q=80' },
+  { label: 'Other',         icon: 'storefront', image: 'https://images.unsplash.com/photo-1598305762558-328f599df683?auto=format&fit=crop&w=300&q=80' },
 ];
 
 export const CITY_SUGGESTIONS = [
@@ -19,12 +20,12 @@ export const CITY_SUGGESTIONS = [
   'Ahmedabad, Gujarat', 'Jaipur, Rajasthan', 'Surat, Gujarat',
 ];
 
-const THEME_PRESETS = ['#2b2f4d', '#2563eb', '#7c3aed', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#db2777'];
+const THEME_PRESETS = ['var(--ink)', '#c1553a', '#7c3aed', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#db2777'];
 
-const LAYOUT_STYLES: { id: ShopLayoutStyle; label: string; icon: string }[] = [
-  { id: 'gallery', label: 'Gallery',      icon: '🖼️' },
-  { id: 'logo',    label: 'Logo',         icon: '🏷️' },
-  { id: 'banner',  label: 'Cover Banner', icon: '🪧' },
+const LAYOUT_STYLES: { id: ShopLayoutStyle; label: string; icon: IconName }[] = [
+  { id: 'gallery', label: 'Gallery',      icon: 'grid' },
+  { id: 'logo',    label: 'Logo',         icon: 'storefront' },
+  { id: 'banner',  label: 'Cover Banner', icon: 'device' },
 ];
 
 const PREVIEW_PRODUCTS = [
@@ -125,10 +126,10 @@ const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '11px 14px',
   borderRadius: 10,
-  border: '1.5px solid #e2e8f0',
+  border: '1.5px solid var(--line)',
   fontSize: '0.92rem',
   fontFamily: 'inherit',
-  color: '#0f172a',
+  color: 'var(--ink)',
   outline: 'none',
   boxSizing: 'border-box',
 };
@@ -137,12 +138,12 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '0.82rem',
   fontWeight: 700,
-  color: '#334155',
+  color: 'var(--ink-2)',
   marginBottom: 6,
 };
 
 const backLinkStyle: React.CSSProperties = {
-  background: 'none', border: 'none', color: '#64748b', fontWeight: 700,
+  background: 'none', border: 'none', color: 'var(--muted)', fontWeight: 700,
   fontSize: '0.88rem', cursor: 'pointer', fontFamily: 'inherit',
 };
 
@@ -173,17 +174,17 @@ const resizeImageToDataUrl = (file: File, maxWidth: number, maxHeight: number, q
 
 const ProgressBar: React.FC<{ step: number; total: number }> = ({ step, total }) => (
   <div style={{ marginBottom: '2rem' }}>
-    <div style={{ height: 6, borderRadius: 9999, background: '#e2e8f0', overflow: 'hidden' }}>
+    <div style={{ height: 6, borderRadius: 9999, background: 'var(--line)', overflow: 'hidden' }}>
       <div
         style={{
-          height: '100%', borderRadius: 9999, background: '#2b2f4d',
+          height: '100%', borderRadius: 9999, background: 'var(--ink)',
           width: `${(step / total) * 100}%`, transition: 'width .3s ease',
         }}
       />
     </div>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-      <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Step {step} of {total}</span>
-      <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#2b2f4d' }}>Vendor Setup</span>
+      <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--muted)' }}>Step {step} of {total}</span>
+      <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--ink)' }}>Vendor Setup</span>
     </div>
   </div>
 );
@@ -198,7 +199,7 @@ const VendorOnboardingWizard: React.FC = () => {
   const [city, setCity] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [contactEmail, setContactEmail] = useState(currentUser?.email || '');
-  const [themeColor, setThemeColor] = useState('#2b2f4d');
+  const [themeColor, setThemeColor] = useState('var(--ink)');
   const [layoutStyle, setLayoutStyle] = useState<ShopLayoutStyle>('gallery');
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
@@ -236,7 +237,7 @@ const VendorOnboardingWizard: React.FC = () => {
     };
     try {
       await saveVendorShopProfile(shopProfile);
-      showToast('Shop created! Welcome to your dashboard 🎉', 'success');
+      showToast('Shop created — welcome to your dashboard', 'success');
     } catch (err) {
       showToast('Failed to create your shop. Please try again.', 'error');
     } finally {
@@ -245,14 +246,14 @@ const VendorOnboardingWizard: React.FC = () => {
   };
 
   return (
-    <div className="wizard-page" style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #eef0f8 0%, #f8fafc 55%)', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="wizard-page" style={{ minHeight: '100vh', background: 'linear-gradient(160deg, var(--paper-2) 0%, var(--paper) 55%)', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className={`wizard-card${step === 3 ? ' wizard-card-wide' : ''}`}>
         {step !== 3 && <ProgressBar step={step} total={3} />}
 
         {step === 1 && (
           <>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>What type of business do you run?</h1>
-            <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.75rem' }}>Choose the category that best fits your shop.</p>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)', marginBottom: 6 }}>What type of business do you run?</h1>
+            <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '1.75rem' }}>Choose the category that best fits your shop.</p>
 
             <div className="wizard-cat-grid">
               {BUSINESS_TYPES.map((bt) => {
@@ -279,8 +280,8 @@ const VendorOnboardingWizard: React.FC = () => {
               disabled={!canContinueStep1}
               className="wizard-continue-bar"
               style={{
-                background: canContinueStep1 ? '#2b2f4d' : '#e2e8f0',
-                color: canContinueStep1 ? '#fff' : '#94a3b8',
+                background: canContinueStep1 ? 'var(--ink)' : 'var(--line)',
+                color: canContinueStep1 ? '#fff' : 'var(--faint)',
                 cursor: canContinueStep1 ? 'pointer' : 'not-allowed',
               }}
             >
@@ -291,8 +292,8 @@ const VendorOnboardingWizard: React.FC = () => {
 
         {step === 2 && (
           <>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>Tell us about your shop</h1>
-            <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.75rem' }}>Buyers will see this on your storefront.</p>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)', marginBottom: 6 }}>Tell us about your shop</h1>
+            <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '1.75rem' }}>Buyers will see this on your storefront.</p>
 
             <div style={{ marginBottom: '1.1rem' }}>
               <label style={labelStyle} htmlFor="shopName">Shop Name</label>
@@ -316,7 +317,7 @@ const VendorOnboardingWizard: React.FC = () => {
                 value={shopDescription}
                 onChange={(e) => setShopDescription(e.target.value)}
               />
-              <div style={{ textAlign: 'right', fontSize: '0.72rem', color: '#94a3b8', marginTop: 4 }}>{shopDescription.length}/500</div>
+              <div style={{ textAlign: 'right', fontSize: '0.72rem', color: 'var(--faint)', marginTop: 4 }}>{shopDescription.length}/500</div>
             </div>
 
             <div style={{ marginBottom: '1.1rem' }}>
@@ -368,8 +369,8 @@ const VendorOnboardingWizard: React.FC = () => {
                 disabled={!canContinueStep2}
                 style={{
                   padding: '12px 28px', borderRadius: 10, border: 'none',
-                  background: canContinueStep2 ? '#2b2f4d' : '#e2e8f0',
-                  color: canContinueStep2 ? '#fff' : '#94a3b8',
+                  background: canContinueStep2 ? 'var(--ink)' : 'var(--line)',
+                  color: canContinueStep2 ? '#fff' : 'var(--faint)',
                   fontWeight: 700, fontSize: '0.9rem',
                   cursor: canContinueStep2 ? 'pointer' : 'not-allowed',
                   fontFamily: 'inherit',
@@ -386,8 +387,8 @@ const VendorOnboardingWizard: React.FC = () => {
             <div className="theme-step-left">
               <ProgressBar step={step} total={3} />
 
-              <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>Theme & Customization</h1>
-              <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.75rem' }}>Customize how your shop looks to buyers.</p>
+              <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)', marginBottom: 6 }}>Theme & Customization</h1>
+              <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '1.75rem' }}>Customize how your shop looks to buyers.</p>
 
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={labelStyle}>Theme Color</label>
@@ -418,7 +419,7 @@ const VendorOnboardingWizard: React.FC = () => {
                         onClick={() => setLayoutStyle(ls.id)}
                         className={`wizard-cat-card${selected ? ' selected' : ''}`}
                       >
-                        <span className="wizard-cat-icon">{ls.icon}</span>
+                        <span className="wizard-cat-icon"><Icon name={ls.icon} size={20} /></span>
                         <span className="wizard-cat-label">{ls.label}</span>
                       </button>
                     );
@@ -433,7 +434,7 @@ const VendorOnboardingWizard: React.FC = () => {
                     {logoDataUrl ? (
                       <img src={logoDataUrl} alt="Logo preview" className="wizard-upload-preview-logo" />
                     ) : (
-                      <span>🏷️ Upload Logo</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Icon name="storefront" size={17} />Upload logo</span>
                     )}
                     <input type="file" accept="image/*" onChange={handleLogoChange} aria-label="Upload shop logo" />
                   </div>
@@ -444,7 +445,7 @@ const VendorOnboardingWizard: React.FC = () => {
                     {bannerDataUrl ? (
                       <img src={bannerDataUrl} alt="Banner preview" className="wizard-upload-preview-banner" />
                     ) : (
-                      <span>🖼️ Upload Banner</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Icon name="grid" size={17} />Upload banner</span>
                     )}
                     <input type="file" accept="image/*" onChange={handleBannerChange} aria-label="Upload cover banner" />
                   </div>
@@ -459,8 +460,8 @@ const VendorOnboardingWizard: React.FC = () => {
                   disabled={saving}
                   style={{
                     padding: '12px 28px', borderRadius: 10, border: 'none',
-                    background: !saving ? '#2b2f4d' : '#e2e8f0',
-                    color: !saving ? '#fff' : '#94a3b8',
+                    background: !saving ? 'var(--ink)' : 'var(--line)',
+                    color: !saving ? '#fff' : 'var(--faint)',
                     fontWeight: 700, fontSize: '0.9rem',
                     cursor: !saving ? 'pointer' : 'not-allowed',
                     fontFamily: 'inherit',
@@ -491,11 +492,11 @@ const VendorOnboardingWizard: React.FC = () => {
                       <div className="wizard-shop-preview-logo">
                         {logoDataUrl
                           ? <img src={logoDataUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
-                          : (shopName.trim()[0] || '🏪').toUpperCase()}
+                          : (shopName.trim()[0] || 'V').toUpperCase()}
                       </div>
                       <span className="wizard-shop-preview-name">{shopName.trim() || 'Your Shop Name'}</span>
                     </div>
-                    <div className="storefront-preview-search">🔍 Search {shopName.trim() || 'this shop'}…</div>
+                    <div className="storefront-preview-search"><Icon name="search" size={13} />Search {shopName.trim() || 'this shop'}…</div>
                   </div>
                   <div className="storefront-preview-body">
                     <div className="storefront-preview-grid">

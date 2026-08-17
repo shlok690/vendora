@@ -10,17 +10,19 @@ interface WaveLayer {
   opacity: number;
 }
 
+/* Warm dune palette — terracotta, saffron and jade, matching the theme tokens. */
 const LAYERS: WaveLayer[] = [
-  { amplitude: 34, wavelength: 420, speed: 0.35, yRatio: 0.40, color: '196,181,253', opacity: 0.40 }, // lavender
-  { amplitude: 44, wavelength: 340, speed: 0.50, yRatio: 0.58, color: '165,180,252', opacity: 0.38 }, // indigo
-  { amplitude: 30, wavelength: 260, speed: 0.65, yRatio: 0.76, color: '147,197,253', opacity: 0.42 }, // blue
+  { amplitude: 30, wavelength: 460, speed: 0.30, yRatio: 0.42, color: '226,182,150', opacity: 0.46 },
+  { amplitude: 42, wavelength: 350, speed: 0.44, yRatio: 0.60, color: '224,163,46',  opacity: 0.26 },
+  { amplitude: 34, wavelength: 270, speed: 0.58, yRatio: 0.78, color: '193,85,58',   opacity: 0.22 },
+  { amplitude: 22, wavelength: 200, speed: 0.74, yRatio: 0.92, color: '46,94,78',    opacity: 0.16 },
 ];
 
 /** Waves are drawn within the top band of the parent so they stay visible even when the
  *  parent (the hero section) is much taller than one screen. */
-const WAVE_BAND_HEIGHT = 640;
+const WAVE_BAND_HEIGHT = 660;
 
-/** Interactive wave background that ripples toward the cursor. Fills its positioned parent. */
+/** Interactive dune background that ripples toward the cursor. Fills its positioned parent. */
 export default function WaveBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -70,13 +72,22 @@ export default function WaveBackground() {
     let time = 0;
 
     const draw = () => {
-      time += reduceMotion ? 0.002 : 0.012;
-      mouse.x += (mouse.targetX - mouse.x) * 0.08;
-      mouse.y += (mouse.targetY - mouse.y) * 0.08;
+      time += reduceMotion ? 0.002 : 0.010;
+      mouse.x += (mouse.targetX - mouse.x) * 0.07;
+      mouse.y += (mouse.targetY - mouse.y) * 0.07;
 
       ctx.clearRect(0, 0, width, height);
 
       const bandHeight = Math.min(height, WAVE_BAND_HEIGHT);
+
+      /* Warm glow trailing the cursor, under the waves. */
+      if (mouse.x > -1000) {
+        const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 260);
+        glow.addColorStop(0, 'rgba(224,163,46,.16)');
+        glow.addColorStop(1, 'rgba(224,163,46,0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, width, height);
+      }
 
       LAYERS.forEach((layer, li) => {
         const baseline = bandHeight * layer.yRatio;
@@ -84,10 +95,15 @@ export default function WaveBackground() {
         const points: { x: number; y: number }[] = [];
 
         for (let x = 0; x <= width; x += step) {
-          const wave = Math.sin(x / layer.wavelength + time * layer.speed + li) * layer.amplitude;
+          /* Two harmonics per layer keep the silhouette organic rather than a clean sine. */
+          const wave =
+            Math.sin(x / layer.wavelength + time * layer.speed + li) * layer.amplitude +
+            Math.sin(x / (layer.wavelength * 0.42) - time * layer.speed * 1.4 + li * 2) * layer.amplitude * 0.28;
+
           const dist = x - mouse.x;
-          const influence = Math.exp(-(dist * dist) / (2 * 160 * 160));
-          const ripple = influence * 46 * Math.sin(time * 1.6 + li * 0.6);
+          const influence = Math.exp(-(dist * dist) / (2 * 180 * 180));
+          const ripple = influence * 52 * Math.sin(time * 1.5 + li * 0.6);
+
           points.push({ x, y: baseline + wave - ripple });
         }
 
@@ -105,8 +121,8 @@ export default function WaveBackground() {
 
         ctx.beginPath();
         points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
-        ctx.strokeStyle = `rgba(${layer.color},${Math.min(layer.opacity + 0.25, 0.85)})`;
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = `rgba(${layer.color},${Math.min(layer.opacity + 0.28, 0.8)})`;
+        ctx.lineWidth = 1.25;
         ctx.stroke();
       });
 
