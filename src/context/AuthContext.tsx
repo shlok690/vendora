@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { User, onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { deleteField, doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { clearLocalDraft, type VendorOnboardingDraft } from '../utils/onboardingDraft';
+
+export type { VendorOnboardingDraft };
 
 export type UserRole = 'vendor' | 'customer';
 
@@ -27,6 +30,8 @@ export interface UserProfile {
   role: UserRole;
   createdAt?: string;
   shopProfile?: VendorShopProfile;
+  /** Half-finished vendor onboarding, mirrored so it can be resumed on any device. */
+  onboardingDraft?: VendorOnboardingDraft;
 }
 
 interface AuthContextType {
@@ -38,7 +43,9 @@ interface AuthContextType {
   getUserRole: (user: User) => Promise<UserRole | null>;
   saveUserRole: (user: User, role: UserRole, displayName?: string, awaitFirestore?: boolean) => Promise<void>;
   switchRole: (newRole: UserRole) => Promise<void>;
-  saveVendorShopProfile: (shopProfile: VendorShopProfile) => Promise<void>;
+  saveVendorShopProfile: (shopProfile: VendorShopProfile) => Promise<boolean>;
+  saveVendorOnboardingDraft: (draft: VendorOnboardingDraft) => Promise<void>;
+  clearVendorOnboardingDraft: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -50,7 +57,9 @@ const AuthContext = createContext<AuthContextType>({
   getUserRole: async () => null,
   saveUserRole: async () => {},
   switchRole: async () => {},
-  saveVendorShopProfile: async () => {},
+  saveVendorShopProfile: async () => false,
+  saveVendorOnboardingDraft: async () => {},
+  clearVendorOnboardingDraft: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -67,6 +76,25 @@ const withTimeout = <T,>(promise: Promise<T>, timeoutMs = 10000): Promise<T> => 
 const VALID_ROLES: UserRole[] = ['vendor', 'customer'];
 
 const isValidRole = (role: any): role is UserRole => VALID_ROLES.includes(role);
+
+/**
+ * Firestore refuses `undefined` field values — the SDK throws before the write is
+ * even attempted. The onboarding wizard and the settings form both use `undefined`
+ * to mean "left blank", so their payloads have to be cleaned first or the whole
+ * write is lost.
+ */
+const stripUndefined = <T extends object>(obj: T): T =>
+  Object.fromEntries(Object.entries(obj).filter(([, value]) => value !== undefined)) as T;
+
+const readCachedProfile = (raw: string | null): UserProfile | null => {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? (parsed as UserProfile) : null;
+  } catch (e) {
+    return null;
+  }
+};
 
 const clearCachedRole = (uid: string) => {
   try {
@@ -141,8 +169,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await saveUserRole(currentUser, newRole);
   };
 
-  const saveVendorShopProfile = async (shopProfile: VendorShopProfile) => {
-    if (!currentUser) return;
+  /** Resolves to true only once Firestore has confirmed the write. */
+  const saveVendorShopProfile = async (rawShopProfile: VendorShopProfile): Promise<boolean> => {
+    if (!currentUser) return false;
+
+    const shopProfile = stripUndefined(rawShopProfile);
 
     const updatedProfile: UserProfile = {
       uid: currentUser.uid,
@@ -162,11 +193,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setUserProfile(updatedProfile);
 
+    // The wizard is finished — its resume draft has served its purpose and must
+    // go, or reopening onboarding later would rehydrate stale half-typed values.
+    clearLocalDraft(currentUser.uid);
+
     const userDocRef = doc(db, 'users', currentUser.uid);
     try {
-      await withTimeout(setDoc(userDocRef, { shopProfile }, { merge: true }));
+      await withTimeout(setDoc(userDocRef, { shopProfile, onboardingDraft: deleteField() }, { merge: true }));
+      return true;
     } catch (err) {
+      // The shop still exists locally and the next load re-attempts this write
+      // (see fetchAndSetUserRole) — but the caller deserves to know it isn't
+      // on the server yet rather than being told everything is fine.
       console.warn('Firestore shop profile save failed; using local cache:', err);
+      return false;
+    }
+  };
+
+  /**
+   * Mirrors the in-progress onboarding wizard to Firestore. Best-effort by
+   * design: the localStorage copy written by the wizard is what guarantees a
+   * refresh resumes, this is what lets another device pick it up.
+   */
+  const saveVendorOnboardingDraft = async (draft: VendorOnboardingDraft) => {
+    if (!currentUser) return;
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    try {
+      await withTimeout(setDoc(userDocRef, { onboardingDraft: draft }, { merge: true }));
+    } catch (err) {
+      console.warn('Firestore onboarding draft save failed; local draft still available:', err);
+    }
+  };
+
+  const clearVendorOnboardingDraft = async () => {
+    if (!currentUser) return;
+    clearLocalDraft(currentUser.uid);
+    setUserProfile((prev) => (prev ? { ...prev, onboardingDraft: undefined } : prev));
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    try {
+      await withTimeout(setDoc(userDocRef, { onboardingDraft: deleteField() }, { merge: true }));
+    } catch (err) {
+      console.warn('Firestore onboarding draft clear failed:', err);
     }
   };
 
@@ -182,10 +249,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const data = userDocSnap.data() as UserProfile;
         const role = data.role;
         if (isValidRole(role)) {
+          let profile: UserProfile = { ...data, uid: user.uid };
+          const cached = readCachedProfile(cachedProfile);
+
+          // A shop that exists locally but not in Firestore means the write at the
+          // end of onboarding never landed (offline, timed out, rejected). Firestore
+          // is authoritative for role, but here it is simply behind — trusting it
+          // would drop the vendor back into the wizard they already completed.
+          // Keep the local shop and retry the write that didn't make it.
+          if (role === 'vendor' && !profile.shopProfile && cached?.shopProfile) {
+            console.warn('Shop profile missing from Firestore but present locally — restoring it and retrying the write.');
+            profile = { ...profile, shopProfile: cached.shopProfile };
+            setDoc(
+              userDocRef,
+              { shopProfile: cached.shopProfile, onboardingDraft: deleteField() },
+              { merge: true }
+            ).catch((retryErr) => console.warn('Retry of shop profile write failed:', retryErr));
+          }
+
+          // Onboarding is over — a leftover draft must never be able to reopen the wizard.
+          if (profile.shopProfile && profile.onboardingDraft) {
+            profile = { ...profile, onboardingDraft: undefined };
+            clearLocalDraft(user.uid);
+          }
+
           setUserRole(role);
-          setUserProfile({ ...data, uid: user.uid });
+          setUserProfile(profile);
           localStorage.setItem(`user_role_${user.uid}`, role);
-          localStorage.setItem(`user_profile_${user.uid}`, JSON.stringify({ ...data, uid: user.uid }));
+          localStorage.setItem(`user_profile_${user.uid}`, JSON.stringify(profile));
           return role;
         }
 
@@ -278,6 +369,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         saveUserRole,
         switchRole,
         saveVendorShopProfile,
+        saveVendorOnboardingDraft,
+        clearVendorOnboardingDraft,
       }}
     >
       {!loading && children}

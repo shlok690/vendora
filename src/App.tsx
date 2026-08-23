@@ -8,6 +8,7 @@ import RegisterPage from './pages/Register/RegisterPage';
 import VendorOnboardingPage from './pages/Dashboard/VendorOnboardingPage';
 import CustomerExplorePage from './pages/Dashboard/CustomerExplorePage';
 import ProductsPage from './pages/Products/ProductsPage';
+import StorefrontPage from './pages/Storefront/StorefrontPage';
 
 function App() {
   return (
@@ -34,6 +35,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['vendor']}>
                 <VendorOnboardingPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected — the vendor's own storefront, as buyers see it */}
+          <Route
+            path="/my-shop"
+            element={
+              <ProtectedRoute allowedRoles={['vendor']}>
+                <StorefrontPage />
               </ProtectedRoute>
             }
           />

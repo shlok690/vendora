@@ -88,8 +88,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
               onClick={() => setRole('vendor')}
             >
               <Icon name="storefront" size={22} strokeWidth={1.5} className="role-btn-icon" />
-              <span className="role-btn-title">Sell products</span>
-              <span className="role-btn-sub">Vendor</span>
+              <span className="role-btn-title">Vendor</span>
             </button>
             <button
               type="button"
@@ -97,8 +96,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ registerRole }) => {
               onClick={() => setRole('customer')}
             >
               <Icon name="cart" size={22} strokeWidth={1.5} className="role-btn-icon" />
-              <span className="role-btn-title">Buy products</span>
-              <span className="role-btn-sub">Customer</span>
+              <span className="role-btn-title">Customer</span>
             </button>
           </div>
 

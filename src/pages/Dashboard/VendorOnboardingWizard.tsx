@@ -1,7 +1,22 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth, type ShopLayoutStyle, type VendorShopProfile } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Icon, { type IconName } from '../../components/Icon';
+import CityCombobox from '../../components/CityCombobox';
+import {
+  DEFAULT_LAYOUT_STYLE,
+  DEFAULT_THEME_COLOR,
+  TOTAL_STEPS,
+  clampStep,
+  clearLocalDraft,
+  isDraftMeaningful,
+  loadLocalDraft,
+  normalizeDraft,
+  pickNewerDraft,
+  saveLocalDraft,
+  type VendorOnboardingDraft,
+  type WizardStep,
+} from '../../utils/onboardingDraft';
 import './Dashboard.css';
 
 export const BUSINESS_TYPES: { label: string; icon: IconName; image: string }[] = [
@@ -14,13 +29,29 @@ export const BUSINESS_TYPES: { label: string; icon: IconName; image: string }[] 
   { label: 'Other',         icon: 'storefront', image: 'https://images.unsplash.com/photo-1598305762558-328f599df683?auto=format&fit=crop&w=300&q=80' },
 ];
 
+export const SHOP_NAME_MAX = 50;
+
+/** Indian mobile numbers: ten digits starting 6-9, dialled as +91. */
+export const WHATSAPP_LENGTH = 10;
+export const WHATSAPP_PREFIX = '+91';
+
+/** Keeps only digits and drops a leading 91/0 so pasted numbers land correctly. */
+export const toLocalDigits = (input: string): string => {
+  let digits = input.replace(/\D/g, '');
+  if (digits.length > WHATSAPP_LENGTH && digits.startsWith('91')) digits = digits.slice(2);
+  if (digits.length > WHATSAPP_LENGTH && digits.startsWith('0')) digits = digits.slice(1);
+  return digits.slice(0, WHATSAPP_LENGTH);
+};
+
+export const isValidWhatsapp = (digits: string) => /^[6-9]\d{9}$/.test(digits);
+
 export const CITY_SUGGESTIONS = [
   'Mumbai, Maharashtra', 'Pune, Maharashtra', 'Delhi', 'Bengaluru, Karnataka',
   'Hyderabad, Telangana', 'Chennai, Tamil Nadu', 'Kolkata, West Bengal',
   'Ahmedabad, Gujarat', 'Jaipur, Rajasthan', 'Surat, Gujarat',
 ];
 
-const THEME_PRESETS = ['var(--ink)', '#c1553a', '#7c3aed', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#db2777'];
+const THEME_PRESETS = [DEFAULT_THEME_COLOR, '#c1553a', '#7c3aed', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#db2777'];
 
 const LAYOUT_STYLES: { id: ShopLayoutStyle; label: string; icon: IconName }[] = [
   { id: 'gallery', label: 'Gallery',      icon: 'grid' },
@@ -172,7 +203,7 @@ const resizeImageToDataUrl = (file: File, maxWidth: number, maxHeight: number, q
     reader.readAsDataURL(file);
   });
 
-const ProgressBar: React.FC<{ step: number; total: number }> = ({ step, total }) => (
+const ProgressBar: React.FC<{ step: number; total: number; onReset?: () => void }> = ({ step, total, onReset }) => (
   <div style={{ marginBottom: '2rem' }}>
     <div style={{ height: 6, borderRadius: 9999, background: 'var(--line)', overflow: 'hidden' }}>
       <div
@@ -186,27 +217,183 @@ const ProgressBar: React.FC<{ step: number; total: number }> = ({ step, total })
       <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--muted)' }}>Step {step} of {total}</span>
       <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--ink)' }}>Vendor Setup</span>
     </div>
+    {onReset && (
+      <div className="wizard-autosave-row">
+        <span className="wizard-autosave-note">
+          <Icon name="check" size={12} />
+          Progress saved automatically
+        </span>
+        <button type="button" className="wizard-reset-btn" onClick={onReset}>Start over</button>
+      </div>
+    )}
   </div>
 );
 
+const REMOTE_CLEARED = '__cleared__';
+
 const VendorOnboardingWizard: React.FC = () => {
-  const { currentUser, saveVendorShopProfile } = useAuth();
+  const {
+    currentUser,
+    userProfile,
+    saveVendorShopProfile,
+    saveVendorOnboardingDraft,
+    clearVendorOnboardingDraft,
+  } = useAuth();
   const { showToast } = useToast();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [businessType, setBusinessType] = useState('');
-  const [shopName, setShopName] = useState('');
-  const [shopDescription, setShopDescription] = useState('');
-  const [city, setCity] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [contactEmail, setContactEmail] = useState(currentUser?.email || '');
-  const [themeColor, setThemeColor] = useState('var(--ink)');
-  const [layoutStyle, setLayoutStyle] = useState<ShopLayoutStyle>('gallery');
-  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
-  const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
+  const uid = currentUser?.uid ?? null;
+
+  /* Resume an interrupted setup: whichever of the local and Firestore copies was
+     written last wins. Read lazily so the very first paint is already on the
+     right step — no flash of step 1 before an effect corrects it. */
+  const [restored] = useState<VendorOnboardingDraft | null>(() => {
+    // A finished shop outranks any draft — never rehydrate one over a real storefront.
+    if (!uid || userProfile?.shopProfile) return null;
+    const draft = pickNewerDraft(loadLocalDraft(uid), normalizeDraft(userProfile?.onboardingDraft));
+    if (!draft) return null;
+    // A category that no longer exists must not stay selected, or step 1 would
+    // look empty while still counting as complete.
+    const businessType = BUSINESS_TYPES.some((bt) => bt.label === draft.businessType) ? draft.businessType : '';
+    return { ...draft, businessType };
+  });
+
+  const [step, setStep] = useState<WizardStep>(() => (restored ? clampStep(restored.step, restored) : 1));
+  const [businessType, setBusinessType] = useState(restored?.businessType ?? '');
+  const [shopName, setShopName] = useState((restored?.shopName ?? '').slice(0, SHOP_NAME_MAX));
+  const [shopDescription, setShopDescription] = useState(restored?.shopDescription ?? '');
+  const [city, setCity] = useState(restored?.city ?? '');
+  const [whatsapp, setWhatsapp] = useState(toLocalDigits(restored?.whatsapp ?? ''));
+  const [contactEmail, setContactEmail] = useState(restored?.contactEmail ?? currentUser?.email ?? '');
+  const [themeColor, setThemeColor] = useState(restored?.themeColor ?? DEFAULT_THEME_COLOR);
+  const [layoutStyle, setLayoutStyle] = useState<ShopLayoutStyle>(restored?.layoutStyle ?? DEFAULT_LAYOUT_STYLE);
+  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(restored?.logoDataUrl ?? null);
+  const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(restored?.bannerDataUrl ?? null);
   const [saving, setSaving] = useState(false);
 
   const canContinueStep1 = businessType !== '';
-  const canContinueStep2 = shopName.trim() !== '' && shopDescription.trim() !== '';
+  // The number is optional, but a half-typed one must not pass.
+  const whatsappOk = whatsapp === '' || isValidWhatsapp(whatsapp);
+  const whatsappError = whatsapp !== '' && !isValidWhatsapp(whatsapp);
+  const canContinueStep2 = shopName.trim() !== '' && shopDescription.trim() !== '' && whatsappOk;
+
+  /* ── Draft autosave ──────────────────────────────────────────────────── */
+  const draftRef = useRef<VendorOnboardingDraft | null>(null);
+  const localTimerRef = useRef<number | undefined>(undefined);
+  const remoteTimerRef = useRef<number | undefined>(undefined);
+  // Signature of what Firestore already holds, so idle re-renders don't rewrite it.
+  const lastRemoteRef = useRef<string>(
+    restored ? JSON.stringify({ ...restored, updatedAt: '' }) : REMOTE_CLEARED
+  );
+  // Once the shop exists the draft is deleted on purpose — no pending autosave
+  // or unmount flush may resurrect it. Starts true if a shop is already on file.
+  const finishedRef = useRef(Boolean(userProfile?.shopProfile));
+
+  const flushRemote = () => {
+    if (!uid || finishedRef.current) return;
+    const draft = draftRef.current;
+    if (!draft) {
+      if (lastRemoteRef.current === REMOTE_CLEARED) return;
+      lastRemoteRef.current = REMOTE_CLEARED;
+      void clearVendorOnboardingDraft();
+      return;
+    }
+    const signature = JSON.stringify({ ...draft, updatedAt: '' });
+    if (signature === lastRemoteRef.current) return;
+    lastRemoteRef.current = signature;
+    void saveVendorOnboardingDraft(draft);
+  };
+
+  useEffect(() => {
+    if (!uid || finishedRef.current) return;
+
+    const draft: VendorOnboardingDraft = {
+      step,
+      businessType,
+      shopName,
+      shopDescription,
+      city,
+      whatsapp,
+      contactEmail,
+      themeColor,
+      layoutStyle,
+      logoDataUrl,
+      bannerDataUrl,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // An untouched wizard isn't worth resuming — drop any stored copy rather than
+    // persisting an empty shell that would later "restore" over nothing.
+    const worthKeeping = isDraftMeaningful(draft);
+    draftRef.current = worthKeeping ? draft : null;
+
+    window.clearTimeout(localTimerRef.current);
+    window.clearTimeout(remoteTimerRef.current);
+
+    if (worthKeeping) {
+      localTimerRef.current = window.setTimeout(() => saveLocalDraft(uid, draft), 250);
+    } else {
+      clearLocalDraft(uid);
+    }
+    // Firestore is the slow cross-device copy — only written once typing settles.
+    remoteTimerRef.current = window.setTimeout(flushRemote, 1500);
+
+    return () => {
+      window.clearTimeout(localTimerRef.current);
+      window.clearTimeout(remoteTimerRef.current);
+    };
+  }, [uid, step, businessType, shopName, shopDescription, city, whatsapp, contactEmail, themeColor, layoutStyle, logoDataUrl, bannerDataUrl]);
+
+  /* Debouncing leaves a window where a write is still pending. Flush it when the
+     tab is hidden or closed (pagehide is the reliable one on mobile browsers) and
+     when the wizard unmounts, e.g. navigating away mid-setup. */
+  useEffect(() => {
+    if (!uid) return;
+    const flush = () => {
+      if (finishedRef.current || !draftRef.current) return;
+      window.clearTimeout(localTimerRef.current);
+      saveLocalDraft(uid, draftRef.current);
+      flushRemote();
+    };
+    const onVisibilityChange = () => { if (document.visibilityState === 'hidden') flush(); };
+
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      flush();
+    };
+  }, [uid]);
+
+  /* Tell the vendor why they didn't land back on step 1. Guarded by a ref rather
+     than an empty dep array alone: StrictMode runs mount effects twice in dev,
+     which would otherwise stack two identical toasts on every refresh. */
+  const resumedStep = restored ? clampStep(restored.step, restored) : 1;
+  const resumeToastShownRef = useRef(false);
+  useEffect(() => {
+    if (resumeToastShownRef.current || !isDraftMeaningful(restored)) return;
+    resumeToastShownRef.current = true;
+    showToast('Welcome back — resuming your setup at step ' + resumedStep + ' of ' + TOTAL_STEPS, 'info');
+  }, []);
+
+  const handleStartOver = () => {
+    window.clearTimeout(localTimerRef.current);
+    window.clearTimeout(remoteTimerRef.current);
+    draftRef.current = null;
+    lastRemoteRef.current = REMOTE_CLEARED;
+    setStep(1);
+    setBusinessType('');
+    setShopName('');
+    setShopDescription('');
+    setCity('');
+    setWhatsapp('');
+    setContactEmail(currentUser?.email || '');
+    setThemeColor(DEFAULT_THEME_COLOR);
+    setLayoutStyle(DEFAULT_LAYOUT_STYLE);
+    setLogoDataUrl(null);
+    setBannerDataUrl(null);
+    void clearVendorOnboardingDraft();
+    showToast('Saved draft cleared — starting fresh', 'info');
+  };
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -228,7 +415,7 @@ const VendorOnboardingWizard: React.FC = () => {
       shopName: shopName.trim(),
       shopDescription: shopDescription.trim(),
       city: city.trim() || undefined,
-      whatsapp: whatsapp.trim() || undefined,
+      whatsapp: whatsapp ? `${WHATSAPP_PREFIX} ${whatsapp}` : undefined,
       contactEmail: contactEmail.trim() || undefined,
       themeColor,
       layoutStyle,
@@ -236,9 +423,20 @@ const VendorOnboardingWizard: React.FC = () => {
       bannerDataUrl: bannerDataUrl || undefined,
     };
     try {
-      await saveVendorShopProfile(shopProfile);
-      showToast('Shop created — welcome to your dashboard', 'success');
+      // Stop autosaving before the draft is deleted, so nothing writes it back.
+      finishedRef.current = true;
+      window.clearTimeout(localTimerRef.current);
+      window.clearTimeout(remoteTimerRef.current);
+      const synced = await saveVendorShopProfile(shopProfile);
+      showToast(
+        synced
+          ? 'Shop created — welcome to your dashboard'
+          : 'Shop created — saved on this device, it will sync when the connection returns',
+        synced ? 'success' : 'info'
+      );
     } catch (err) {
+      // Setup isn't done after all — keep protecting their work.
+      finishedRef.current = false;
       showToast('Failed to create your shop. Please try again.', 'error');
     } finally {
       setSaving(false);
@@ -248,7 +446,7 @@ const VendorOnboardingWizard: React.FC = () => {
   return (
     <div className="wizard-page" style={{ minHeight: '100vh', background: 'linear-gradient(160deg, var(--paper-2) 0%, var(--paper) 55%)', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className={`wizard-card${step === 3 ? ' wizard-card-wide' : ''}`}>
-        {step !== 3 && <ProgressBar step={step} total={3} />}
+        {step !== 3 && <ProgressBar step={step} total={TOTAL_STEPS} onReset={handleStartOver} />}
 
         {step === 1 && (
           <>
@@ -302,9 +500,11 @@ const VendorOnboardingWizard: React.FC = () => {
                 style={inputStyle}
                 type="text"
                 placeholder="e.g. Riya Crafts"
+                maxLength={SHOP_NAME_MAX}
                 value={shopName}
-                onChange={(e) => setShopName(e.target.value)}
+                onChange={(e) => setShopName(e.target.value.slice(0, SHOP_NAME_MAX))}
               />
+              <div style={{ textAlign: 'right', fontSize: '0.72rem', color: 'var(--faint)', marginTop: 4 }}>{shopName.length}/{SHOP_NAME_MAX}</div>
             </div>
 
             <div style={{ marginBottom: '1.1rem' }}>
@@ -322,31 +522,35 @@ const VendorOnboardingWizard: React.FC = () => {
 
             <div style={{ marginBottom: '1.1rem' }}>
               <label style={labelStyle} htmlFor="city">City / Location</label>
-              <input
+              <CityCombobox
                 id="city"
-                list="city-suggestions"
-                style={inputStyle}
-                type="text"
-                placeholder="e.g. Pune, Maharashtra"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={setCity}
+                placeholder="Search Indian cities — e.g. Pune"
               />
-              <datalist id="city-suggestions">
-                {CITY_SUGGESTIONS.map((c) => <option key={c} value={c} />)}
-              </datalist>
             </div>
 
             <div className="wizard-2col">
               <div>
                 <label style={labelStyle} htmlFor="whatsapp">WhatsApp Number</label>
-                <input
-                  id="whatsapp"
-                  style={inputStyle}
-                  type="tel"
-                  placeholder="+91 98765 43210"
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                />
+                <div className={`phone-field${whatsappError ? ' invalid' : ''}`}>
+                  <span className="phone-field-prefix">{WHATSAPP_PREFIX}</span>
+                  <input
+                    id="whatsapp"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel-national"
+                    placeholder="98765 43210"
+                    maxLength={WHATSAPP_LENGTH}
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(toLocalDigits(e.target.value))}
+                  />
+                </div>
+                <div className={`phone-field-hint${whatsappError ? ' invalid' : ''}`}>
+                  {whatsappError
+                    ? `Enter all ${WHATSAPP_LENGTH} digits, starting 6–9.`
+                    : `${WHATSAPP_LENGTH}-digit Indian mobile number`}
+                </div>
               </div>
               <div>
                 <label style={labelStyle} htmlFor="contactEmail">Contact Email</label>
@@ -385,7 +589,7 @@ const VendorOnboardingWizard: React.FC = () => {
         {step === 3 && (
           <div className="theme-step-split">
             <div className="theme-step-left">
-              <ProgressBar step={step} total={3} />
+              <ProgressBar step={step} total={TOTAL_STEPS} onReset={handleStartOver} />
 
               <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)', marginBottom: 6 }}>Theme & Customization</h1>
               <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '1.75rem' }}>Customize how your shop looks to buyers.</p>

@@ -126,7 +126,7 @@
 }
 
 .role-btn {
-  padding: 18px 14px;
+  padding: 16px 14px;
   border: none;
   background: var(--paper);
   cursor: pointer;
@@ -159,16 +159,6 @@
 }
 
 .role-btn.active .role-btn-title { color: var(--paper); }
-
-.role-btn-sub {
-  font-size: .74rem;
-  color: var(--muted);
-  font-weight: 500;
-  margin-top: 2px;
-  display: block;
-}
-
-.role-btn.active .role-btn-sub { color: rgba(250, 246, 240, .62); }
 
 /* ── forgot password row ── */
 .auth-pw-row {

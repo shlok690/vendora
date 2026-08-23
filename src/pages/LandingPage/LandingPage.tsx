@@ -26,7 +26,7 @@ const vendors: { name: string; category: string; icon: IconName; city: string; t
 
 const journeys: Record<'vendor' | 'customer', { label: string; blurb: string; cta: string; href: string; steps: { icon: IconName; title: string; desc: string }[] }> = {
   vendor: {
-    label: 'I want to sell',
+    label: 'Vendor',
     blurb: 'Set up a storefront in an afternoon and reach customers across your city — no commission on your first hundred orders.',
     cta: 'Open your store',
     href: '/register/seller',
@@ -37,7 +37,7 @@ const journeys: Record<'vendor' | 'customer', { label: string; blurb: string; ct
     ],
   },
   customer: {
-    label: 'I want to buy',
+    label: 'Customer',
     blurb: 'Find the makers behind the things you love — and know exactly whose hands made what you bought.',
     cta: 'Start exploring',
     href: '/register/buyer',
@@ -234,26 +234,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Featured Vendors ── */}
-        <section className="section" id="vendors">
-          <div className="container">
-            <header className="section-heading reveal">
-              <span className="section-label">Featured shops</span>
-              <h2>The people behind<br />the products.</h2>
-              <p>
-                Every shop on Vendora is run by the person who makes or sources what's in it.
-                Here are a few worth knowing.
-              </p>
-            </header>
-
-            <div className="vendors-grid">
-              {vendors.map((v, i) => (
-                <VendorCard key={v.name} v={v} index={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ── How it works — switchable journey ── */}
         <section className="section section-alt" id="journey">
           <div className="container">
@@ -301,6 +281,26 @@ export default function LandingPage() {
                 <Icon name="arrowRight" size={17} strokeWidth={2} />
               </Link>
               <span className="journey-note">Free to join · no listing fees</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Featured Vendors ── */}
+        <section className="section" id="vendors">
+          <div className="container">
+            <header className="section-heading reveal">
+              <span className="section-label">Featured shops</span>
+              <h2>The people behind<br />the products.</h2>
+              <p>
+                Every shop on Vendora is run by the person who makes or sources what's in it.
+                Here are a few worth knowing.
+              </p>
+            </header>
+
+            <div className="vendors-grid">
+              {vendors.map((v, i) => (
+                <VendorCard key={v.name} v={v} index={i} />
+              ))}
             </div>
           </div>
         </section>

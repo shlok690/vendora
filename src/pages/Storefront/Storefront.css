@@ -1,0 +1,329 @@
+/* =========================================================
+   Vendora — Vendor storefront
+   Full-size version of the wizard's step-3 live preview.
+   ========================================================= */
+
+.storefront-page {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Owner bar ── */
+.storefront-owner-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 9px 20px;
+  background: var(--ink);
+  color: rgba(255, 255, 255, .82);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.storefront-owner-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.storefront-owner-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, .12);
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.storefront-owner-back:hover { background: rgba(255, 255, 255, .2); }
+/* The arrow points back, not forward. */
+.storefront-owner-back svg { transform: rotate(180deg); }
+
+/* ── Hero ── */
+.storefront-hero {
+  padding: 46px 20px 40px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+/* A photo behind text needs a scrim or the name disappears into it. */
+.storefront-hero.has-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .28) 0%, rgba(0, 0, 0, .62) 100%);
+}
+
+.storefront-hero-inner {
+  position: relative;
+  max-width: 1080px;
+  margin-inline: auto;
+}
+
+.storefront-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.storefront-logo {
+  flex-shrink: 0;
+  width: 66px;
+  height: 66px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .9);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-family: var(--font-display, 'Fraunces', Georgia, serif);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+}
+.storefront-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.storefront-brand-text { min-width: 0; }
+
+.storefront-name {
+  font-size: clamp(1.5rem, 4.4vw, 2.4rem);
+  font-weight: 800;
+  font-family: var(--font-display, 'Fraunces', Georgia, serif);
+  line-height: 1.12;
+  color: inherit;
+  overflow-wrap: anywhere;
+}
+
+.storefront-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.storefront-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, .18);
+  border: 1px solid rgba(255, 255, 255, .28);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: inherit;
+}
+
+.storefront-tagline {
+  max-width: 620px;
+  margin-top: 16px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: inherit;
+  opacity: .92;
+}
+
+.storefront-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 420px;
+  margin-top: 22px;
+  padding: 11px 16px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, .95);
+  color: var(--muted);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .12);
+}
+.storefront-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+.storefront-search input::-webkit-search-cancel-button { cursor: pointer; }
+
+/* Layout styles picked in the wizard */
+.storefront-hero-logo { text-align: center; }
+.storefront-hero-logo .storefront-brand { flex-direction: column; gap: 12px; }
+.storefront-hero-logo .storefront-logo { width: 84px; height: 84px; font-size: 2rem; }
+.storefront-hero-logo .storefront-meta { justify-content: center; }
+.storefront-hero-logo .storefront-tagline { margin-inline: auto; }
+.storefront-hero-logo .storefront-search { margin-inline: auto; }
+
+.storefront-hero-banner { padding: 74px 20px 64px; }
+
+/* ── Products ── */
+.storefront-body {
+  flex: 1;
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding: 32px 20px 48px;
+}
+
+.storefront-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.storefront-section-head h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--font-display, 'Fraunces', Georgia, serif);
+}
+.storefront-count { font-size: 0.8rem; color: var(--faint); font-weight: 600; }
+
+.storefront-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.storefront-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform .15s, box-shadow .15s;
+}
+.storefront-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(61, 42, 26, .1);
+}
+
+.storefront-card-img {
+  width: 100%;
+  height: 158px;
+  object-fit: cover;
+  display: block;
+  background: var(--paper-2);
+}
+
+.storefront-card-body { padding: 12px 14px 14px; }
+
+.storefront-card-name {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.storefront-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.storefront-card-price {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--shop-theme, var(--ink));
+}
+
+.storefront-card-cat {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.storefront-empty {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 48px 20px;
+  border: 1px dashed var(--line-2);
+  border-radius: 16px;
+  color: var(--muted);
+  text-align: center;
+}
+.storefront-empty button {
+  border: 1px solid var(--line);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+/* ── Footer ── */
+.storefront-footer {
+  background: var(--ink);
+  color: rgba(255, 255, 255, .78);
+  padding: 26px 20px;
+}
+
+.storefront-footer-inner {
+  max-width: 1080px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.storefront-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.storefront-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 0.84rem;
+}
+.storefront-contact a,
+.storefront-contact span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(255, 255, 255, .78);
+  text-decoration: none;
+}
+.storefront-contact a:hover { color: #fff; text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .storefront-hero,
+  .storefront-hero-banner { padding: 30px 16px 28px; }
+  .storefront-brand { gap: 12px; }
+  .storefront-logo { width: 54px; height: 54px; border-radius: 13px; font-size: 1.3rem; }
+  .storefront-hero-logo .storefront-logo { width: 66px; height: 66px; font-size: 1.6rem; }
+  .storefront-tagline { font-size: 0.9rem; margin-top: 12px; }
+  .storefront-search { margin-top: 16px; padding: 10px 14px; }
+  .storefront-body { padding: 22px 16px 34px; }
+  .storefront-grid { grid-template-columns: repeat(2, 1fr); gap: 11px; }
+  .storefront-card-img { height: 112px; }
+  .storefront-card-body { padding: 10px 11px 12px; }
+  .storefront-card-name { font-size: 0.84rem; margin-bottom: 6px; }
+  .storefront-card-price { font-size: 0.9rem; }
+  .storefront-card-cat { display: none; }
+  .storefront-owner-bar { padding: 8px 14px; font-size: 0.72rem; }
+  .storefront-footer-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+}

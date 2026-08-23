@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth, type VendorShopProfile } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import VendorOnboardingWizard, { BUSINESS_TYPES, CITY_SUGGESTIONS } from './VendorOnboardingWizard';
 import Logo from '../../components/Logo';
+import UserMenu from '../../components/UserMenu';
 import Icon, { type IconName } from '../../components/Icon';
 import './Dashboard.css';
 
@@ -62,20 +63,23 @@ const VendorOnboardingPage: React.FC = () => {
       {/* Header */}
       <header className="dash-header">
         <div className="dash-header-brand">
-          <Logo size={24} />
+          <Link to="/" className="dash-brand-link" aria-label="Vendora home">
+            <Logo size={24} />
+          </Link>
           <span className="dash-header-subtitle" style={{ fontSize: '0.8rem', color: 'var(--faint)', marginLeft: 6 }}>Vendor Dashboard</span>
         </div>
         <div className="dash-header-actions">
-          <span className="dash-header-username" style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--ink-2)' }}>{userProfile?.displayName || userProfile?.email}</span>
-          <span style={{ fontSize: '0.72rem', background: 'var(--paper-2)', color: 'var(--ink)', border: '1px solid var(--line-2)', padding: '3px 10px', borderRadius: 9999, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>Vendor</span>
-          <button onClick={() => navigate('/')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, background: 'var(--paper-2)', border: '1px solid var(--line)', color: 'var(--ink-2)', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>
+          <Link className="dash-ghost-btn" to="/my-shop">
             <Icon name="storefront" size={15} />
-            Main site
-          </button>
-          <button onClick={handleLogout} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, background: 'var(--danger-soft)', border: '1px solid #f0cec5', color: 'var(--danger)', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>
-            <Icon name="logout" size={15} />
-            Logout
-          </button>
+            View your site
+          </Link>
+          <UserMenu
+            name={userProfile?.displayName || userProfile?.email?.split('@')[0] || 'Vendor'}
+            email={userProfile?.email}
+            roleLabel="Vendor"
+            onLogout={handleLogout}
+            viewSiteTo="/my-shop"
+          />
         </div>
       </header>
 
@@ -91,7 +95,7 @@ const VendorOnboardingPage: React.FC = () => {
                   className={`vendor-nav-btn${activeTab === tab.id ? ' active' : ''}`}
                 >
                   <Icon name={tab.icon} size={17} />
-                  {tab.label}
+                  <span className="vendor-nav-label">{tab.label}</span>
                 </button>
               ))}
             </nav>
@@ -113,19 +117,21 @@ const VendorOnboardingPage: React.FC = () => {
           {activeTab === 'overview' && (
             <div>
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '1.5rem', color: 'var(--ink)' }}>
-                Welcome back, {userProfile?.displayName?.split(' ')[0] || 'Vendor'}
+                Welcome, {userProfile?.displayName?.split(' ')[0] || 'Vendor'}
               </h2>
 
               {/* Metric cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="dash-metric-grid">
                 {metrics.map((m) => (
-                  <div key={m.label} style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 16, padding: '1.25rem', boxShadow: '0 1px 3px rgba(15,23,42,.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>{m.label}</div>
-                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: m.iconBg, color: m.iconColor, display: 'grid', placeItems: 'center', flexShrink: 0 }}><Icon name={m.icon} size={17} /></div>
+                  <div key={m.label} className="dash-metric-card">
+                    <div className="dash-metric-top">
+                      <div className="dash-metric-label">{m.label}</div>
+                      <div className="dash-metric-icon" style={{ background: m.iconBg, color: m.iconColor }}>
+                        <Icon name={m.icon} size={17} />
+                      </div>
                     </div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--ink)', lineHeight: 1.1, marginTop: 10 }}>{m.value}</div>
-                    <div style={{ fontSize: '0.76rem', color: 'var(--faint)', marginTop: 6 }}>{m.sub}</div>
+                    <div className="dash-metric-value">{m.value}</div>
+                    <div className="dash-metric-sub">{m.sub}</div>
                   </div>
                 ))}
               </div>
@@ -288,7 +294,7 @@ const VendorOnboardingPage: React.FC = () => {
 
 const ShopSettingsForm: React.FC<{
   shopProfile: VendorShopProfile;
-  saveVendorShopProfile: (p: VendorShopProfile) => Promise<void>;
+  saveVendorShopProfile: (p: VendorShopProfile) => Promise<boolean>;
 }> = ({ shopProfile, saveVendorShopProfile }) => {
   const { showToast } = useToast();
   const [businessType, setBusinessType] = useState(shopProfile.businessType);
@@ -307,7 +313,7 @@ const ShopSettingsForm: React.FC<{
     setSaving(true);
     setSaved(false);
     try {
-      await saveVendorShopProfile({
+      const synced = await saveVendorShopProfile({
         businessType,
         shopName: shopName.trim(),
         shopDescription: shopDescription.trim(),
@@ -316,7 +322,10 @@ const ShopSettingsForm: React.FC<{
         contactEmail: contactEmail.trim() || undefined,
       });
       setSaved(true);
-      showToast('Shop settings saved', 'success');
+      showToast(
+        synced ? 'Shop settings saved' : 'Settings saved on this device — they will sync when the connection returns',
+        synced ? 'success' : 'info'
+      );
     } catch (err) {
       showToast('Failed to save shop settings. Please try again.', 'error');
     } finally {
