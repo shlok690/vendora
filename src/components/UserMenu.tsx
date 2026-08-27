@@ -12,9 +12,11 @@ interface UserMenuProps {
   /** Real href rather than a click handler, so it still works if React's
    *  event handling is wedged and the browser falls back to the anchor. */
   viewSiteTo: string;
+  /** Opens the shop-details form; omitted for roles that have no shop. */
+  onShopDetails?: () => void;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ name, email, roleLabel, onLogout, viewSiteTo }) => {
+const UserMenu: React.FC<UserMenuProps> = ({ name, email, roleLabel, onLogout, viewSiteTo, onShopDetails }) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +69,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ name, email, roleLabel, onLogout, v
               <span className="user-menu-role">{roleLabel}</span>
             </div>
           </div>
+
+          {onShopDetails && (
+            <button type="button" role="menuitem" className="user-menu-item" onClick={run(onShopDetails)}>
+              <Icon name="gear" size={16} />
+              Shop details
+            </button>
+          )}
 
           {/* On a phone the header has no room for a separate button, so the same
               destination lives here instead. */}

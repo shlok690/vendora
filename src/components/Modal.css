@@ -1,0 +1,139 @@
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(25, 20, 16, .46);
+  backdrop-filter: blur(6px) saturate(1.1);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+  animation: modal-scrim-in .18s ease;
+}
+
+.modal-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  max-height: min(86vh, 780px);
+  border-radius: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 26px 70px rgba(25, 20, 16, .30), 0 4px 12px rgba(25, 20, 16, .12);
+  animation: modal-panel-in .22s cubic-bezier(.19, 1, .22, 1);
+  overflow: hidden;
+}
+.modal-wide { max-width: 620px; }
+
+/* The grab handle only makes sense once this is a sheet. */
+.modal-grip { display: none; }
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 14px;
+}
+
+.modal-heading h2 {
+  font-family: var(--font-display, 'Fraunces', Georgia, serif);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.modal-heading p {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 5px;
+  max-width: 46ch;
+}
+
+.modal-close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper-2);
+  color: var(--muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.modal-close:hover { background: var(--paper-3); color: var(--ink); }
+
+.modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 24px 22px;
+}
+
+.modal-foot {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 14px 24px 20px;
+  border-top: 1px solid var(--line);
+  background: linear-gradient(180deg, transparent, var(--paper) 60%);
+}
+
+@keyframes modal-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modal-panel-in {
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Phone: a bottom sheet that slides up ── */
+@media (max-width: 640px) {
+  .modal-scrim {
+    align-items: flex-end;
+    padding: 0;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .modal-panel,
+  .modal-wide {
+    max-width: none;
+    max-height: 92vh;
+    border-radius: 24px 24px 0 0;
+    border-bottom: none;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: modal-sheet-in .26s cubic-bezier(.19, 1, .22, 1);
+  }
+  .modal-grip {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 9px auto 0;
+    border-radius: 9999px;
+    background: var(--line-2);
+  }
+  .modal-head { padding: 12px 18px 12px; }
+  .modal-heading h2 { font-size: 1.15rem; }
+  .modal-body { padding: 2px 18px 18px; }
+  .modal-foot { padding: 12px 18px 16px; }
+  .modal-foot > * { flex: 1 1 0; justify-content: center; }
+}
+
+@keyframes modal-sheet-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-scrim, .modal-panel { animation-duration: .01ms; }
+}

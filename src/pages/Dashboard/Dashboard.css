@@ -37,6 +37,9 @@
   border-radius: 8px;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
   transition: opacity .15s;
 }
 .dash-brand-link:hover { opacity: .72; }
@@ -44,25 +47,6 @@
   outline: 2px solid var(--clay);
   outline-offset: 3px;
 }
-
-.dash-ghost-btn {
-  display: inline-flex;
-  text-decoration: none;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 9999px;
-  background: var(--paper-2);
-  border: 1px solid var(--line);
-  color: var(--ink-2);
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 0.82rem;
-  cursor: pointer;
-  transition: background .15s, border-color .15s;
-}
-.dash-ghost-btn:hover { background: var(--paper-3); border-color: var(--line-2); }
-.dash-ghost-btn:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
 
 /* ── Sidebar + main layout ── */
 .dash-layout {
@@ -83,150 +67,6 @@
   flex-direction: column;
   gap: 4px;
 }
-
-/* ── Tables ── */
-.dash-table-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.dash-table-wrap table { min-width: 560px; }
-
-/* ── Stat cards ── */
-.dash-metric-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.dash-metric-card {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, .05);
-}
-
-.dash-metric-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.dash-metric-label {
-  font-size: 0.8rem;
-  color: var(--faint);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-
-.dash-metric-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-
-.dash-metric-value {
-  font-size: 1.8rem;
-  font-weight: 900;
-  color: var(--ink);
-  line-height: 1.1;
-  margin-top: 10px;
-}
-
-.dash-metric-sub {
-  font-size: 0.76rem;
-  color: var(--faint);
-  margin-top: 6px;
-}
-
-/* ── 2-column stat/field grids ── */
-.dash-2col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.dash-overview-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.25rem;
-}
-
-/* ── Vendor dashboard — dark sidebar ── */
-.vendor-sidebar-panel {
-  background: var(--ink);
-  border-radius: 16px;
-  padding: 1rem;
-}
-
-.vendor-nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: none;
-  border-left: 3px solid transparent;
-  background: transparent;
-  color: var(--faint);
-  font-weight: 500;
-  cursor: pointer;
-  font-size: .9rem;
-  font-family: inherit;
-  transition: all .15s;
-}
-.vendor-nav-btn svg { flex-shrink: 0; }
-
-.vendor-nav-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.vendor-nav-btn:hover { background: rgba(255,255,255,.06); color: #fff; }
-.vendor-nav-btn.active {
-  background: rgba(255,255,255,.10);
-  color: #fff;
-  font-weight: 700;
-  border-left-color: #fff;
-}
-
-.vendor-sidebar-tip {
-  margin-top: 1.75rem;
-  padding: 1rem;
-  border-radius: 12px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  color: rgba(255,255,255,.75);
-}
-
-.vendor-quick-action {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  text-align: left;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--paper);
-  color: var(--ink-2);
-  font-weight: 600;
-  font-size: .86rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background .15s, border-color .15s;
-}
-.vendor-quick-action:hover { background: var(--paper-2); border-color: var(--line-2); }
 
 /* ── Vendor onboarding wizard ── */
 .wizard-page {
@@ -612,39 +452,6 @@
     padding-bottom: 2px;
   }
   .dash-tabs button { flex-shrink: 0; width: auto; white-space: nowrap; }
-  .dash-overview-grid { grid-template-columns: 1fr; }
-
-  /* Vendor nav: a horizontal scroll strip hides half the destinations behind a
-     gesture nothing signals. Lay them out as a grid instead — all five visible,
-     nothing clipped, no sideways scrolling. */
-  .vendor-sidebar-panel { padding: 10px; border-radius: 14px; }
-  .vendor-sidebar-panel .dash-tabs {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-    gap: 6px;
-    overflow: visible;
-    padding-bottom: 0;
-  }
-  .vendor-nav-btn {
-    /* Left-aligned inside each tile so the icons line up column by column. */
-    justify-content: flex-start;
-    gap: 9px;
-    /* Grid items default to min-width:auto, which would let a long label push
-       the track wider than the panel on a narrow phone. */
-    min-width: 0;
-    min-height: 44px;
-    padding: 11px 10px;
-    /* The 3px left rule reads as "current row" in a vertical list and as noise
-       in a grid — the active tile is filled instead. */
-    border-left: none;
-    border-radius: 10px;
-  }
-  .vendor-nav-btn.active {
-    background: #fff;
-    color: var(--ink);
-  }
-  /* Decorative upsell, and the one thing here a phone can do without. */
-  .vendor-sidebar-tip { display: none; }
 }
 
 @media (max-width: 640px) {
@@ -657,8 +464,6 @@
   }
   .dash-header-actions { flex-wrap: nowrap; gap: 0.5rem; }
   .dash-header-subtitle { display: none; }
-  /* Too little room for a second button — it moves into the account menu. */
-  .dash-ghost-btn { display: none; }
 }
 
 @media (max-width: 860px) {
@@ -671,52 +476,15 @@
 
 @media (max-width: 560px) {
   .wizard-cat-grid { grid-template-columns: repeat(2, 1fr); }
-
-  .vendor-sidebar-panel .dash-tabs { grid-template-columns: repeat(2, 1fr); }
-  /* Odd number of tabs — let the last one span the empty cell. */
-  .vendor-sidebar-panel .dash-tabs .vendor-nav-btn:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-  .vendor-nav-btn { font-size: .82rem; padding: 11px 8px; gap: 7px; }
-}
-
-/* Phones: two square tiles per row instead of one full-width card each, so the
-   four numbers read at a glance rather than over three screens of scrolling. */
-@media (max-width: 600px) {
-  .dash-metric-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 1rem;
-  }
-  .dash-metric-card {
-    aspect-ratio: 1 / 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 14px;
-    border-radius: 14px;
-  }
-  .dash-metric-label {
-    font-size: 0.66rem;
-    letter-spacing: .04em;
-    line-height: 1.3;
-  }
-  .dash-metric-icon { width: 28px; height: 28px; }
-  .dash-metric-icon svg { width: 15px; height: 15px; }
-  .dash-metric-value { font-size: 1.55rem; margin-top: 0; }
-  .dash-metric-sub { font-size: 0.66rem; margin-top: 0; }
 }
 
 /* Smallest phones still in use — trim until the longest label fits untruncated. */
 @media (max-width: 380px) {
   .dash-layout { padding: 1.25rem .75rem; }
-  .vendor-sidebar-panel .dash-tabs { gap: 5px; }
-  .vendor-nav-btn { font-size: .78rem; padding: 10px 7px; gap: 6px; }
 }
 
 @media (max-width: 480px) {
   .dash-header-username { display: none; }
-  .dash-2col { grid-template-columns: 1fr; }
   .wizard-2col { grid-template-columns: 1fr; margin-bottom: 1.5rem; }
   .wizard-card:not(.wizard-card-wide) { padding: 1.75rem 1.25rem; }
   .wizard-page { padding: 1.5rem 1rem; }
@@ -799,3 +567,859 @@
   color: var(--faint);
 }
 .phone-field-hint.invalid { color: var(--danger); font-weight: 600; }
+
+/* ── Storefront colour, in shop details ── */
+.settings-color {
+  margin-bottom: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.settings-color-note {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--faint);
+  margin: -2px 0 12px;
+}
+
+.settings-color-body {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+/* The picker takes the room it can; the swatch column stays its own width. */
+.settings-color-body .wizard-color-picker { flex: 1; min-width: 0; }
+
+.settings-color-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  width: 108px;
+  flex-shrink: 0;
+}
+
+.settings-color-preview {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  border-radius: 12px;
+  border: 1px solid rgba(25, 20, 16, .12);
+  color: #fff;
+  box-shadow: inset 0 -18px 24px rgba(0, 0, 0, .12);
+}
+
+.settings-hex {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Menlo, monospace;
+  font-size: 0.82rem;
+  text-transform: lowercase;
+  color: var(--ink);
+  outline: none;
+}
+.settings-hex:focus { border-color: var(--clay); box-shadow: 0 0 0 3px var(--clay-soft); }
+
+@media (max-width: 560px) {
+  .settings-color-body { flex-direction: column; }
+  .settings-color-side {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+  }
+  .settings-color-preview { height: 40px; flex: 0 0 56px; }
+  .settings-hex { flex: 1; }
+}
+
+/* ── Back out of shop details ── */
+.dash-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 1.1rem;
+  padding: 7px 14px 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.dash-back-link:hover { background: var(--paper-3); border-color: var(--line-2); }
+/* The arrow points back, not forward. */
+.dash-back-link svg { transform: rotate(180deg); }
+
+/* =========================================================
+   Vendor workspace
+   One calm surface: a themed hero, a toolbar, and a grid of
+   product cards. Everything that edits something opens in a
+   pop-up (see Modal.css) rather than expanding inline, so the
+   page never turns into a stack of half-open forms.
+   ========================================================= */
+.dash-work {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+/* Grid and flex children default to min-width:auto, so one long
+   unbreakable value sets a floor the whole page can't shrink past. */
+.dash-work > * { min-width: 0; }
+
+/* ── Hero ── */
+.dash-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--hero) 13%, var(--surface)) 0%, var(--surface) 62%);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem 1.6rem 1.35rem;
+}
+/* A soft bloom of the vendor's own colour, so no two dashboards
+   look quite the same. */
+.dash-hero-glow {
+  position: absolute;
+  top: -160px;
+  right: -110px;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--hero) 34%, transparent) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.dash-hero-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dash-hero-mark {
+  flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(25, 20, 16, .16);
+}
+.dash-hero-mark img { width: 100%; height: 100%; object-fit: cover; }
+
+.dash-hero-titles { flex: 1 1 240px; min-width: 0; }
+
+.dash-hero-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dash-hero-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4.4vw, 2.15rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -.015em;
+  color: var(--ink);
+  margin: 3px 0 5px;
+  overflow-wrap: anywhere;
+}
+.dash-hero-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  font-size: 0.83rem;
+  color: var(--muted);
+  min-width: 0;
+}
+.dash-hero-meta > span { display: inline-flex; align-items: center; gap: 7px; }
+.dash-hero-meta a { color: var(--muted); text-decoration: none; }
+.dash-hero-meta a:hover { color: var(--ink); text-decoration: underline; }
+.dash-dot {
+  flex-shrink: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--line-2);
+}
+
+.dash-hero-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 17px;
+  border-radius: 9999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.83rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform .18s var(--ease-out), box-shadow .18s var(--ease-out);
+}
+.dash-hero-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(25, 20, 16, .22); }
+
+/* Stat tiles double as the way in — each opens its own pop-up. */
+.dash-hero-stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 1.35fr);
+  gap: 10px;
+  margin-top: 1.25rem;
+}
+.dash-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(4px);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .18s var(--ease-out), border-color .18s, background .18s;
+}
+.dash-stat:hover { transform: translateY(-2px); border-color: var(--line-2); background: var(--surface); }
+.dash-stat:focus-visible { outline: 2px solid var(--hero, var(--clay)); outline-offset: 2px; }
+.dash-stat svg { color: var(--muted); margin-bottom: 5px; }
+.dash-stat strong {
+  display: block;
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-stat-wide strong { font-size: 1.05rem; padding-top: 6px; }
+.dash-stat span {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* ── Toolbar ── */
+.dash-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.dash-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.dash-bar-title em {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  padding: 2px 9px;
+}
+.dash-bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ── Shared buttons (also used inside the pop-ups) ── */
+.btn-quiet,
+.btn-solid {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 9999px;
+  font-family: inherit;
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .16s, border-color .16s, transform .16s var(--ease-out), color .16s;
+}
+.btn-quiet {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+}
+.btn-quiet:hover { background: var(--paper-2); border-color: var(--line-2); }
+.btn-solid {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+.btn-solid:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(25, 20, 16, .2); }
+.btn-solid:disabled,
+.btn-quiet:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-quiet:focus-visible,
+.btn-solid:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+.dash-bar-add span { font-size: 1.05rem; line-height: 1; margin-top: -1px; }
+
+/* A label that opens a file picker, styled as a button. */
+.btn-file { position: relative; overflow: hidden; cursor: pointer; }
+.btn-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.btn-link {
+  display: block;
+  margin-top: 6px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--clay-deep);
+  cursor: pointer;
+}
+.btn-link:hover { text-decoration: underline; }
+
+.btn-link-danger {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--danger);
+  cursor: pointer;
+}
+.btn-link-danger:hover { text-decoration: underline; }
+
+.icon-btn {
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 5px 12px;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.icon-btn:hover { background: var(--paper-2); color: var(--ink); border-color: var(--line-2); }
+.icon-btn-danger:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+.icon-btn:disabled { opacity: .45; cursor: not-allowed; }
+/* A single glyph belongs in a circle, not a pill. */
+.icon-btn-round {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+/* ── Category filter strip ── */
+.dash-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.dash-filters::-webkit-scrollbar { display: none; }
+.dash-filter {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px 6px 7px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 0.81rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.dash-filter:not(:has(img)) { padding-left: 13px; }
+.dash-filter img {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.dash-filter em {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--faint);
+}
+.dash-filter:hover { border-color: var(--line-2); background: var(--paper-2); }
+.dash-filter.is-on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.dash-filter.is-on em { color: rgba(255, 255, 255, .62); }
+
+/* ── Product cards ── */
+.dash-cards {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
+  gap: 1rem;
+}
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s;
+}
+.dash-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--line-2); }
+
+.dash-card-ghost {
+  height: 268px;
+  border-style: dashed;
+  box-shadow: none;
+  background: linear-gradient(100deg, var(--paper-2) 25%, var(--paper-3) 40%, var(--paper-2) 55%);
+  background-size: 300% 100%;
+  animation: dash-shimmer 1.5s linear infinite;
+}
+@keyframes dash-shimmer {
+  from { background-position: 120% 0; }
+  to   { background-position: -60% 0; }
+}
+
+.dash-card-photo {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 0;
+  background: var(--paper-2);
+  cursor: pointer;
+  overflow: hidden;
+}
+.dash-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s var(--ease-out);
+}
+.dash-card:hover .dash-card-photo img { transform: scale(1.04); }
+.dash-card-noimg {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--line-2);
+}
+.dash-card-flag {
+  position: absolute;
+  left: 9px;
+  bottom: 9px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.dash-card-body { flex: 1; padding: 12px 14px 10px; min-width: 0; }
+.dash-card-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.dash-card-line h3 {
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dash-card-line strong {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--clay-deep);
+}
+.dash-card-tag {
+  display: inline-block;
+  margin-top: 7px;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  font-size: 0.71rem;
+  font-weight: 600;
+  color: var(--muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-card-desc {
+  margin-top: 8px;
+  font-size: 0.79rem;
+  line-height: 1.5;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dash-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px 11px 14px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+.dash-card-stock {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--faint);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-card-tools { display: flex; gap: 5px; flex-shrink: 0; }
+
+/* ── Empty states ── */
+.dash-blank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+.dash-blank-slim { padding: 2.2rem 1.5rem; }
+.dash-blank h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.dash-blank p {
+  margin-top: 7px;
+  max-width: 42ch;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.dash-blank-actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1.15rem;
+}
+
+/* ── Floating add button (phones only) ── */
+.dash-fab { display: none; }
+
+/* ── Tablet ── */
+@media (max-width: 860px) {
+  .dash-layout { padding: 1.5rem 1.15rem 2rem; }
+}
+
+/* ── Phone ── */
+@media (max-width: 700px) {
+  .dash-layout { padding: 1.1rem .9rem 5.5rem; }
+  .dash-work { gap: .95rem; }
+
+  .dash-hero { padding: 1.15rem 1.1rem 1.1rem; border-radius: var(--r-md); }
+  .dash-hero-top { gap: .8rem; }
+  .dash-hero-mark { width: 48px; height: 48px; border-radius: 15px; font-size: 1.25rem; }
+  /* The CTA drops to its own full-width row rather than squeezing the name. */
+  .dash-hero-cta { flex-basis: 100%; justify-content: center; order: 3; }
+  .dash-hero-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 1rem; }
+  .dash-stat-wide { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 9px; }
+  .dash-stat-wide svg { margin-bottom: 0; }
+  .dash-stat-wide strong { padding-top: 0; font-size: .95rem; }
+  .dash-stat-wide span { margin-left: auto; }
+
+  .dash-bar-title { font-size: 1.15rem; }
+  /* The FAB covers adding on a phone, so the toolbar keeps only the pop-ups. */
+  .dash-bar-add { display: none; }
+
+  .dash-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+  .dash-card-body { padding: 9px 10px 8px; }
+  .dash-card-line { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .dash-card-line h3 { font-size: .86rem; }
+  .dash-card-desc { display: none; }
+  .dash-card-foot { padding: 8px 9px; flex-wrap: wrap; }
+  .dash-card-stock { flex-basis: 100%; }
+  .dash-card-tools { width: 100%; }
+  .dash-card-tools .icon-btn { flex: 1; padding: 8px 12px; }
+  .cat-row .icon-btn-round { width: 34px; height: 34px; }
+  .dash-card-ghost { height: 210px; }
+
+  .dash-blank { padding: 2.2rem 1.1rem; }
+  .dash-blank-actions > * { flex: 1 1 100%; justify-content: center; }
+
+  .dash-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    font-size: 1.9rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 10px 26px rgba(25, 20, 16, .32);
+  }
+  .dash-fab span { margin-top: -3px; }
+  .dash-fab:active { transform: scale(.94); }
+}
+
+/* Narrow phones: one card per row keeps names and prices readable. */
+@media (max-width: 359px) {
+  .dash-cards { grid-template-columns: minmax(0, 1fr); }
+  .dash-card-desc { display: -webkit-box; }
+  /* The style name needs the full tile width or it ellipsises. */
+  .dash-stat-wide { flex-direction: column; align-items: flex-start; gap: 1px; }
+  .dash-stat-wide svg { margin-bottom: 5px; }
+  .dash-stat-wide span { margin-left: 0; }
+}
+
+/* =========================================================
+   Pop-up contents (forms and lists inside Modal.css panels)
+   ========================================================= */
+.form { display: flex; flex-direction: column; gap: 14px; }
+
+.form-photo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+}
+.form-photo-preview {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  color: var(--line-2);
+}
+.form-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.form-photo-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.form-hint {
+  flex-basis: 100%;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--faint);
+}
+
+.field { position: relative; display: block; min-width: 0; }
+.field > span,
+.field > label > span {
+  display: block;
+  font-size: 0.79rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  margin-bottom: 5px;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--clay);
+  box-shadow: 0 0 0 3px var(--clay-soft);
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-counter {
+  display: block;
+  text-align: right;
+  font-size: 0.71rem;
+  color: var(--faint);
+  margin-top: 4px;
+}
+
+/* ── Categories pop-up ── */
+.cat-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.cat-add-photo {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1.5px dashed var(--line-2);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--paper-2);
+  color: var(--faint);
+  cursor: pointer;
+}
+.cat-add-photo img { width: 100%; height: 100%; object-fit: cover; }
+.cat-add-photo input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.cat-add-photo > span { font-size: 1.15rem; font-weight: 700; line-height: 1; }
+.cat-add-name {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none;
+}
+.cat-add-name:focus { border-color: var(--clay); box-shadow: 0 0 0 3px var(--clay-soft); }
+
+.cat-empty {
+  padding: 1.6rem 1rem;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--muted);
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-md);
+}
+
+.cat-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.cat-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.cat-thumb {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--paper-2);
+  color: var(--line-2);
+  padding: 0;
+  cursor: pointer;
+}
+.cat-thumb img { width: 100%; height: 100%; object-fit: cover; }
+/* A quiet corner badge saying the tile is the way to set a photo. */
+.cat-thumb-hint {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px 0 0 0;
+  background: rgba(25, 20, 16, .62);
+  color: #fff;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.cat-thumb:hover .cat-thumb-hint,
+.cat-thumb:focus-visible .cat-thumb-hint { opacity: 1; }
+
+.cat-row-main { flex: 1; min-width: 0; }
+.cat-row-name {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.cat-row-meta { display: block; font-size: 0.74rem; color: var(--faint); margin-top: 1px; }
+
+@media (max-width: 640px) {
+  .field-row { grid-template-columns: 1fr; }
+  .form-photo { align-items: flex-start; }
+}

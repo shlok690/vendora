@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useAuth, type ShopLayoutStyle, type VendorShopProfile } from '../../context/AuthContext';
+import { useAuth, type VendorShopProfile } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Icon, { type IconName } from '../../components/Icon';
 import CityCombobox from '../../components/CityCombobox';
+import UiStylePicker from '../../components/UiStylePicker';
+import ColorPicker, { THEME_PRESETS } from '../../components/ColorPicker';
+import { resizeImageToDataUrl } from '../../utils/image';
+import { DEFAULT_UI_STYLE, normalizeUiStyle, type UiStyle } from '../../utils/uiStyle';
 import {
-  DEFAULT_LAYOUT_STYLE,
   DEFAULT_THEME_COLOR,
   TOTAL_STEPS,
   clampStep,
@@ -51,107 +54,12 @@ export const CITY_SUGGESTIONS = [
   'Ahmedabad, Gujarat', 'Jaipur, Rajasthan', 'Surat, Gujarat',
 ];
 
-const THEME_PRESETS = [DEFAULT_THEME_COLOR, '#c1553a', '#7c3aed', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#db2777'];
-
-const LAYOUT_STYLES: { id: ShopLayoutStyle; label: string; icon: IconName }[] = [
-  { id: 'gallery', label: 'Gallery',      icon: 'grid' },
-  { id: 'logo',    label: 'Logo',         icon: 'storefront' },
-  { id: 'banner',  label: 'Cover Banner', icon: 'device' },
-];
-
 const PREVIEW_PRODUCTS = [
   'https://images.unsplash.com/photo-1601330862030-1e08c703ac04?auto=format&fit=crop&w=200&q=80',
   'https://images.unsplash.com/photo-1613068431228-8cb6a1e92573?auto=format&fit=crop&w=200&q=80',
   'https://images.unsplash.com/photo-1542044801-30d3e45ae49a?auto=format&fit=crop&w=200&q=80',
   'https://images.unsplash.com/photo-1590605095243-072811dbe64c?auto=format&fit=crop&w=200&q=80',
 ];
-
-/* ── HSV colour-picker math ── */
-const hexToRgb = (hex: string): [number, number, number] => {
-  const clean = hex.replace('#', '');
-  const full = clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean;
-  const n = parseInt(full, 16) || 0;
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-};
-
-const rgbToHex = (r: number, g: number, b: number): string => {
-  const toHex = (n: number) => Math.round(Math.min(255, Math.max(0, n))).toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-};
-
-const rgbToHsv = (r: number, g: number, b: number): [number, number, number] => {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-  let h = 0;
-  if (d !== 0) {
-    if (max === r) h = (((g - b) / d) % 6) * 60;
-    else if (max === g) h = ((b - r) / d + 2) * 60;
-    else h = ((r - g) / d + 4) * 60;
-    if (h < 0) h += 360;
-  }
-  return [h, max === 0 ? 0 : d / max, max];
-};
-
-const hsvToRgb = (h: number, s: number, v: number): [number, number, number] => {
-  const c = v * s;
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-  const m = v - c;
-  let rgb: [number, number, number] = [0, 0, 0];
-  if (h < 60) rgb = [c, x, 0];
-  else if (h < 120) rgb = [x, c, 0];
-  else if (h < 180) rgb = [0, c, x];
-  else if (h < 240) rgb = [0, x, c];
-  else if (h < 300) rgb = [x, 0, c];
-  else rgb = [c, 0, x];
-  return [(rgb[0] + m) * 255, (rgb[1] + m) * 255, (rgb[2] + m) * 255];
-};
-
-const ColorPicker: React.FC<{ value: string; onChange: (hex: string) => void }> = ({ value, onChange }) => {
-  const svRef = useRef<HTMLDivElement>(null);
-  const hueRef = useRef<HTMLDivElement>(null);
-  const [h, s, v] = rgbToHsv(...hexToRgb(value));
-
-  const fromSv = (clientX: number, clientY: number) => {
-    const box = svRef.current;
-    if (!box) return;
-    const rect = box.getBoundingClientRect();
-    const x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-    const y = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
-    onChange(rgbToHex(...hsvToRgb(h, x, 1 - y)));
-  };
-
-  const fromHue = (clientY: number) => {
-    const bar = hueRef.current;
-    if (!bar) return;
-    const rect = bar.getBoundingClientRect();
-    const y = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
-    onChange(rgbToHex(...hsvToRgb(y * 360, s, v)));
-  };
-
-  const hueColor = `rgb(${hsvToRgb(h, 1, 1).map((n) => Math.round(n)).join(',')})`;
-
-  return (
-    <div className="wizard-color-picker">
-      <div
-        ref={svRef}
-        className="wizard-sv-box"
-        style={{ background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${hueColor})` }}
-        onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); fromSv(e.clientX, e.clientY); }}
-        onPointerMove={(e) => { if (e.buttons === 1) fromSv(e.clientX, e.clientY); }}
-      >
-        <div className="wizard-sv-thumb" style={{ left: `${s * 100}%`, top: `${(1 - v) * 100}%`, background: value }} />
-      </div>
-      <div
-        ref={hueRef}
-        className="wizard-hue-bar"
-        onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); fromHue(e.clientY); }}
-        onPointerMove={(e) => { if (e.buttons === 1) fromHue(e.clientY); }}
-      >
-        <div className="wizard-hue-thumb" style={{ top: `${(h / 360) * 100}%` }} />
-      </div>
-    </div>
-  );
-};
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -177,31 +85,6 @@ const backLinkStyle: React.CSSProperties = {
   background: 'none', border: 'none', color: 'var(--muted)', fontWeight: 700,
   fontSize: '0.88rem', cursor: 'pointer', fontFamily: 'inherit',
 };
-
-/** Downscales + compresses an image file client-side and returns a JPEG data URL small enough to store in Firestore. */
-const resizeImageToDataUrl = (file: File, maxWidth: number, maxHeight: number, quality = 0.82): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(reader.error);
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('Could not read image'));
-      img.onload = () => {
-        const scale = Math.min(1, maxWidth / img.width, maxHeight / img.height);
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { reject(new Error('Canvas not supported')); return; }
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = reader.result as string;
-    };
-    reader.readAsDataURL(file);
-  });
 
 const ProgressBar: React.FC<{ step: number; total: number; onReset?: () => void }> = ({ step, total, onReset }) => (
   <div style={{ marginBottom: '2rem' }}>
@@ -264,7 +147,7 @@ const VendorOnboardingWizard: React.FC = () => {
   const [whatsapp, setWhatsapp] = useState(toLocalDigits(restored?.whatsapp ?? ''));
   const [contactEmail, setContactEmail] = useState(restored?.contactEmail ?? currentUser?.email ?? '');
   const [themeColor, setThemeColor] = useState(restored?.themeColor ?? DEFAULT_THEME_COLOR);
-  const [layoutStyle, setLayoutStyle] = useState<ShopLayoutStyle>(restored?.layoutStyle ?? DEFAULT_LAYOUT_STYLE);
+  const [uiStyle, setUiStyle] = useState<UiStyle>(normalizeUiStyle(restored?.uiStyle));
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(restored?.logoDataUrl ?? null);
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(restored?.bannerDataUrl ?? null);
   const [saving, setSaving] = useState(false);
@@ -314,7 +197,7 @@ const VendorOnboardingWizard: React.FC = () => {
       whatsapp,
       contactEmail,
       themeColor,
-      layoutStyle,
+      uiStyle,
       logoDataUrl,
       bannerDataUrl,
       updatedAt: new Date().toISOString(),
@@ -340,7 +223,7 @@ const VendorOnboardingWizard: React.FC = () => {
       window.clearTimeout(localTimerRef.current);
       window.clearTimeout(remoteTimerRef.current);
     };
-  }, [uid, step, businessType, shopName, shopDescription, city, whatsapp, contactEmail, themeColor, layoutStyle, logoDataUrl, bannerDataUrl]);
+  }, [uid, step, businessType, shopName, shopDescription, city, whatsapp, contactEmail, themeColor, uiStyle, logoDataUrl, bannerDataUrl]);
 
   /* Debouncing leaves a window where a write is still pending. Flush it when the
      tab is hidden or closed (pagehide is the reliable one on mobile browsers) and
@@ -388,7 +271,7 @@ const VendorOnboardingWizard: React.FC = () => {
     setWhatsapp('');
     setContactEmail(currentUser?.email || '');
     setThemeColor(DEFAULT_THEME_COLOR);
-    setLayoutStyle(DEFAULT_LAYOUT_STYLE);
+    setUiStyle(DEFAULT_UI_STYLE);
     setLogoDataUrl(null);
     setBannerDataUrl(null);
     void clearVendorOnboardingDraft();
@@ -418,7 +301,7 @@ const VendorOnboardingWizard: React.FC = () => {
       whatsapp: whatsapp ? `${WHATSAPP_PREFIX} ${whatsapp}` : undefined,
       contactEmail: contactEmail.trim() || undefined,
       themeColor,
-      layoutStyle,
+      uiStyle,
       logoDataUrl: logoDataUrl || undefined,
       bannerDataUrl: bannerDataUrl || undefined,
     };
@@ -612,23 +495,8 @@ const VendorOnboardingWizard: React.FC = () => {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={labelStyle}>Layout Style</label>
-                <div className="wizard-cat-grid">
-                  {LAYOUT_STYLES.map((ls) => {
-                    const selected = layoutStyle === ls.id;
-                    return (
-                      <button
-                        key={ls.id}
-                        type="button"
-                        onClick={() => setLayoutStyle(ls.id)}
-                        className={`wizard-cat-card${selected ? ' selected' : ''}`}
-                      >
-                        <span className="wizard-cat-icon"><Icon name={ls.icon} size={20} /></span>
-                        <span className="wizard-cat-label">{ls.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <label style={labelStyle}>Storefront Style</label>
+                <UiStylePicker value={uiStyle} onChange={setUiStyle} />
               </div>
 
               <div className="wizard-2col" style={{ marginBottom: '1.5rem' }}>

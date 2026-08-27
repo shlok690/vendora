@@ -1,18 +1,108 @@
 /* =========================================================
    Vendora — Vendor storefront
-   Full-size version of the wizard's step-3 live preview.
+
+   One set of markup, three looks. Each `data-ui-style` below
+   redefines the --sf-* tokens; the rules further down only
+   ever read those, so a style change never needs new markup.
    ========================================================= */
 
 .storefront-page {
+  /* Compact & simple — the default */
+  --sf-radius: 10px;
+  --sf-radius-lg: 14px;
+  --sf-card-bg: var(--surface);
+  --sf-card-border: 1px solid var(--line);
+  --sf-card-shadow: none;
+  --sf-card-shadow-hover: 0 6px 16px rgba(61, 42, 26, .1);
+  --sf-card-lift: -2px;
+  --sf-hero-pad: 34px 20px 30px;
+  --sf-hero-align: left;
+  --sf-brand-gap: 14px;
+  --sf-logo-size: 58px;
+  --sf-name-size: clamp(1.4rem, 3.6vw, 2rem);
+  --sf-display: 'Inter', system-ui, sans-serif;
+  --sf-display-weight: 800;
+  --sf-letter: -0.01em;
+  --sf-grid-min: 190px;
+  --sf-gap: 14px;
+  --sf-media-ratio: 4 / 3;
+  --sf-body-pad: 26px 20px 40px;
+  --sf-section-size: 1.15rem;
+  --sf-name-card: 0.92rem;
+  --sf-cat-bg: var(--paper-2);
+  --sf-cat-active-bg: var(--ink);
+  --sf-cat-active-fg: #fff;
+  --sf-cat-radius: 9999px;
+  --sf-cat-thumb: 26px;
+
   min-height: 100vh;
   background: var(--paper);
   color: var(--ink-2);
-  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  font-family: 'Inter', system-ui, sans-serif;
   display: flex;
   flex-direction: column;
 }
 
-/* ── Owner bar ── */
+/* ── Funky & modern ── */
+.storefront-page[data-ui-style='funky'] {
+  --sf-radius: 20px;
+  --sf-radius-lg: 28px;
+  --sf-card-shadow: 0 10px 26px rgba(61, 42, 26, .09);
+  --sf-card-shadow-hover: 0 20px 44px color-mix(in srgb, var(--shop-theme) 34%, transparent);
+  --sf-card-lift: -6px;
+  --sf-card-border: 1px solid transparent;
+  --sf-hero-pad: 76px 20px 66px;
+  --sf-brand-gap: 20px;
+  --sf-logo-size: 84px;
+  --sf-name-size: clamp(2rem, 7vw, 3.4rem);
+  --sf-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --sf-display-weight: 900;
+  --sf-letter: -0.03em;
+  --sf-grid-min: 240px;
+  --sf-gap: 22px;
+  --sf-media-ratio: 1 / 1;
+  --sf-body-pad: 40px 20px 56px;
+  --sf-section-size: 1.6rem;
+  --sf-name-card: 1.05rem;
+  --sf-cat-bg: color-mix(in srgb, var(--shop-theme) 12%, var(--paper-2));
+  --sf-cat-active-bg: var(--shop-theme);
+  --sf-cat-radius: 9999px;
+  --sf-cat-thumb: 34px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--shop-theme) 7%, var(--paper)) 0%, var(--paper) 420px);
+}
+
+/* ── Simple & sober ── */
+.storefront-page[data-ui-style='sober'] {
+  --sf-radius: 2px;
+  --sf-radius-lg: 3px;
+  --sf-card-bg: transparent;
+  --sf-card-border: 1px solid transparent;
+  --sf-card-shadow: none;
+  --sf-card-shadow-hover: none;
+  --sf-card-lift: 0px;
+  --sf-hero-pad: 84px 20px 72px;
+  --sf-hero-align: center;
+  --sf-brand-gap: 16px;
+  --sf-logo-size: 68px;
+  --sf-name-size: clamp(1.7rem, 4.6vw, 2.6rem);
+  --sf-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --sf-display-weight: 500;
+  --sf-letter: 0.005em;
+  --sf-grid-min: 250px;
+  --sf-gap: 40px;
+  --sf-media-ratio: 3 / 4;
+  --sf-body-pad: 52px 20px 72px;
+  --sf-section-size: 1.05rem;
+  --sf-name-card: 0.95rem;
+  --sf-cat-bg: transparent;
+  --sf-cat-active-bg: transparent;
+  --sf-cat-active-fg: var(--ink);
+  --sf-cat-radius: 0;
+  --sf-cat-thumb: 0px;
+  background: var(--paper);
+}
+
+/* ── Owner bar (same in every style) ── */
 .storefront-owner-bar {
   display: flex;
   align-items: center;
@@ -25,13 +115,7 @@
   font-size: 0.78rem;
   font-weight: 600;
 }
-
-.storefront-owner-note {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
+.storefront-owner-note { display: inline-flex; align-items: center; gap: 7px; }
 .storefront-owner-back {
   display: inline-flex;
   align-items: center;
@@ -44,12 +128,12 @@
   white-space: nowrap;
 }
 .storefront-owner-back:hover { background: rgba(255, 255, 255, .2); }
-/* The arrow points back, not forward. */
 .storefront-owner-back svg { transform: rotate(180deg); }
 
 /* ── Hero ── */
 .storefront-hero {
-  padding: 46px 20px 40px;
+  padding: var(--sf-hero-pad);
+  text-align: var(--sf-hero-align);
   background-size: cover;
   background-position: center;
   position: relative;
@@ -71,22 +155,22 @@
 .storefront-brand {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--sf-brand-gap);
 }
 
 .storefront-logo {
   flex-shrink: 0;
-  width: 66px;
-  height: 66px;
-  border-radius: 16px;
+  width: var(--sf-logo-size);
+  height: var(--sf-logo-size);
+  border-radius: var(--sf-radius-lg);
   overflow: hidden;
-  background: rgba(255, 255, 255, .9);
+  background: rgba(255, 255, 255, .92);
   color: var(--ink);
   display: grid;
   place-items: center;
-  font-size: 1.6rem;
+  font-size: calc(var(--sf-logo-size) * .42);
   font-weight: 800;
-  font-family: var(--font-display, 'Fraunces', Georgia, serif);
+  font-family: var(--sf-display);
   box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
 }
 .storefront-logo img { width: 100%; height: 100%; object-fit: cover; }
@@ -94,10 +178,11 @@
 .storefront-brand-text { min-width: 0; }
 
 .storefront-name {
-  font-size: clamp(1.5rem, 4.4vw, 2.4rem);
-  font-weight: 800;
-  font-family: var(--font-display, 'Fraunces', Georgia, serif);
-  line-height: 1.12;
+  font-size: var(--sf-name-size);
+  font-weight: var(--sf-display-weight);
+  font-family: var(--sf-display);
+  letter-spacing: var(--sf-letter);
+  line-height: 1.08;
   color: inherit;
   overflow-wrap: anywhere;
 }
@@ -153,17 +238,90 @@
   font-size: 0.92rem;
   color: var(--ink);
 }
-.storefront-search input::-webkit-search-cancel-button { cursor: pointer; }
 
-/* Layout styles picked in the wizard */
-.storefront-hero-logo { text-align: center; }
-.storefront-hero-logo .storefront-brand { flex-direction: column; gap: 12px; }
-.storefront-hero-logo .storefront-logo { width: 84px; height: 84px; font-size: 2rem; }
-.storefront-hero-logo .storefront-meta { justify-content: center; }
-.storefront-hero-logo .storefront-tagline { margin-inline: auto; }
-.storefront-hero-logo .storefront-search { margin-inline: auto; }
+/* Sober centres the hero; funky lets the brand stack for impact. */
+.storefront-page[data-ui-style='sober'] .storefront-brand { flex-direction: column; }
+.storefront-page[data-ui-style='sober'] .storefront-meta { justify-content: center; }
+.storefront-page[data-ui-style='sober'] .storefront-tagline { margin-inline: auto; }
+.storefront-page[data-ui-style='sober'] .storefront-search { margin-inline: auto; }
+.storefront-page[data-ui-style='sober'] .storefront-logo { box-shadow: none; border: 1px solid rgba(255, 255, 255, .5); }
+.storefront-page[data-ui-style='sober'] .storefront-chip { background: transparent; letter-spacing: .08em; text-transform: uppercase; font-size: 0.64rem; }
 
-.storefront-hero-banner { padding: 74px 20px 64px; }
+.storefront-page[data-ui-style='funky'] .storefront-hero:not(.has-banner) {
+  background-image: linear-gradient(135deg, var(--shop-theme) 0%, color-mix(in srgb, var(--shop-theme) 55%, #000) 100%);
+}
+.storefront-page[data-ui-style='funky'] .storefront-logo { box-shadow: 0 14px 34px rgba(0, 0, 0, .28); }
+
+/* ── Category strip ── */
+.storefront-cats {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.storefront-cats-inner {
+  display: flex;
+  gap: 8px;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding: 12px 20px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.storefront-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 7px 14px 7px 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--sf-cat-radius);
+  background: var(--sf-cat-bg);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.storefront-cat:hover { border-color: var(--line-2); }
+.storefront-cat.active {
+  background: var(--sf-cat-active-bg);
+  color: var(--sf-cat-active-fg, #fff);
+  border-color: var(--sf-cat-active-bg);
+}
+.storefront-cat-thumb {
+  display: grid;
+  place-items: center;
+  width: var(--sf-cat-thumb);
+  height: var(--sf-cat-thumb);
+  border-radius: calc(var(--sf-cat-radius) - 4px);
+  overflow: hidden;
+  background: var(--paper-3);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.storefront-cat-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.storefront-cat.active .storefront-cat-thumb { background: rgba(255, 255, 255, .22); color: inherit; }
+
+/* Sober trades pills for an understated underlined row. */
+.storefront-page[data-ui-style='sober'] .storefront-cats { background: transparent; }
+.storefront-page[data-ui-style='sober'] .storefront-cat {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 6px 2px;
+  margin-right: 18px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.storefront-page[data-ui-style='sober'] .storefront-cat.active {
+  border-bottom-color: var(--shop-theme);
+  color: var(--ink);
+}
+.storefront-page[data-ui-style='sober'] .storefront-cat-thumb { display: none; }
 
 /* ── Products ── */
 .storefront-body {
@@ -171,7 +329,7 @@
   width: 100%;
   max-width: 1080px;
   margin-inline: auto;
-  padding: 32px 20px 48px;
+  padding: var(--sf-body-pad);
 }
 
 .storefront-section-head {
@@ -182,79 +340,149 @@
   margin-bottom: 18px;
 }
 .storefront-section-head h2 {
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-size: var(--sf-section-size);
+  font-weight: var(--sf-display-weight);
+  font-family: var(--sf-display);
+  letter-spacing: var(--sf-letter);
   color: var(--ink);
-  font-family: var(--font-display, 'Fraunces', Georgia, serif);
 }
 .storefront-count { font-size: 0.8rem; color: var(--faint); font-weight: 600; }
 
+.storefront-page[data-ui-style='sober'] .storefront-section-head {
+  display: block;
+  text-align: center;
+  margin-bottom: 34px;
+}
+.storefront-page[data-ui-style='sober'] .storefront-section-head h2 {
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+.storefront-page[data-ui-style='sober'] .storefront-count { display: block; margin-top: 6px; }
+
 .storefront-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(var(--sf-grid-min), 1fr));
+  gap: var(--sf-gap);
 }
 
 .storefront-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  background: var(--sf-card-bg);
+  border: var(--sf-card-border);
+  border-radius: var(--sf-radius);
   overflow: hidden;
-  transition: transform .15s, box-shadow .15s;
+  box-shadow: var(--sf-card-shadow);
+  transition: transform .18s ease, box-shadow .18s ease;
 }
 .storefront-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(61, 42, 26, .1);
+  transform: translateY(var(--sf-card-lift));
+  box-shadow: var(--sf-card-shadow-hover);
 }
 
-.storefront-card-img {
-  width: 100%;
-  height: 158px;
-  object-fit: cover;
-  display: block;
+.storefront-card-media {
+  position: relative;
+  aspect-ratio: var(--sf-media-ratio);
   background: var(--paper-2);
+}
+.storefront-card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.storefront-card-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--faint);
+}
+.storefront-card-flag {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: .03em;
 }
 
 .storefront-card-body { padding: 12px 14px 14px; }
-
 .storefront-card-name {
-  font-size: 0.94rem;
+  font-size: var(--sf-name-card);
   font-weight: 700;
+  font-family: var(--sf-display);
+  letter-spacing: var(--sf-letter);
   color: var(--ink);
-  margin-bottom: 8px;
 }
-
+.storefront-card-desc {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .storefront-card-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  margin-top: 9px;
 }
-
 .storefront-card-price {
   font-size: 1rem;
   font-weight: 800;
   color: var(--shop-theme, var(--ink));
 }
-
 .storefront-card-cat {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--faint);
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: .05em;
+}
+
+/* Sober drops the card chrome entirely — images and type carry it. */
+.storefront-page[data-ui-style='sober'] .storefront-card-body {
+  padding: 14px 0 0;
+  text-align: center;
+}
+.storefront-page[data-ui-style='sober'] .storefront-card-media { border-radius: 2px; overflow: hidden; }
+.storefront-page[data-ui-style='sober'] .storefront-card-row { justify-content: center; gap: 12px; margin-top: 7px; }
+.storefront-page[data-ui-style='sober'] .storefront-card-price { font-weight: 600; font-size: 0.92rem; color: var(--ink); }
+.storefront-page[data-ui-style='sober'] .storefront-card-cat { display: none; }
+
+.storefront-page[data-ui-style='funky'] .storefront-card-body { padding: 16px 18px 20px; }
+.storefront-page[data-ui-style='funky'] .storefront-card-price { font-size: 1.2rem; font-weight: 900; }
+
+.storefront-card-skeleton {
+  aspect-ratio: var(--sf-media-ratio);
+  background: linear-gradient(100deg, var(--paper-2) 30%, var(--paper-3) 50%, var(--paper-2) 70%);
+  background-size: 220% 100%;
+  animation: sf-shimmer 1.2s linear infinite;
+  border: var(--sf-card-border);
+}
+@keyframes sf-shimmer {
+  from { background-position: 180% 0; }
+  to   { background-position: -80% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .storefront-card-skeleton { animation: none; }
 }
 
 .storefront-empty {
   display: grid;
   place-items: center;
   gap: 10px;
-  padding: 48px 20px;
+  padding: 54px 20px;
   border: 1px dashed var(--line-2);
-  border-radius: 16px;
+  border-radius: var(--sf-radius-lg);
   color: var(--muted);
   text-align: center;
 }
+.storefront-empty a,
 .storefront-empty button {
   border: 1px solid var(--line);
   background: var(--paper-2);
@@ -265,13 +493,19 @@
   padding: 8px 16px;
   border-radius: 9999px;
   cursor: pointer;
+  text-decoration: none;
 }
+.storefront-empty a:hover,
+.storefront-empty button:hover { background: var(--paper-3); }
 
 /* ── Footer ── */
 .storefront-footer {
   background: var(--ink);
   color: rgba(255, 255, 255, .78);
   padding: 26px 20px;
+}
+.storefront-page[data-ui-style='funky'] .storefront-footer {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--shop-theme) 45%, #000) 0%, var(--ink) 100%);
 }
 
 .storefront-footer-inner {
@@ -310,20 +544,19 @@
 .storefront-contact a:hover { color: #fff; text-decoration: underline; }
 
 @media (max-width: 600px) {
-  .storefront-hero,
-  .storefront-hero-banner { padding: 30px 16px 28px; }
-  .storefront-brand { gap: 12px; }
-  .storefront-logo { width: 54px; height: 54px; border-radius: 13px; font-size: 1.3rem; }
-  .storefront-hero-logo .storefront-logo { width: 66px; height: 66px; font-size: 1.6rem; }
+  .storefront-page { --sf-grid-min: 150px; --sf-gap: 11px; --sf-body-pad: 22px 16px 34px; }
+  .storefront-page[data-ui-style='funky'] { --sf-grid-min: 160px; --sf-gap: 14px; --sf-hero-pad: 40px 16px 34px; }
+  .storefront-page[data-ui-style='sober'] { --sf-gap: 26px; --sf-hero-pad: 44px 16px 38px; }
+  .storefront-hero { padding: 28px 16px 26px; }
+  .storefront-page[data-ui-style='funky'] .storefront-hero,
+  .storefront-page[data-ui-style='sober'] .storefront-hero { padding: var(--sf-hero-pad); }
+  .storefront-logo { width: calc(var(--sf-logo-size) * .78); height: calc(var(--sf-logo-size) * .78); }
   .storefront-tagline { font-size: 0.9rem; margin-top: 12px; }
   .storefront-search { margin-top: 16px; padding: 10px 14px; }
-  .storefront-body { padding: 22px 16px 34px; }
-  .storefront-grid { grid-template-columns: repeat(2, 1fr); gap: 11px; }
-  .storefront-card-img { height: 112px; }
   .storefront-card-body { padding: 10px 11px 12px; }
-  .storefront-card-name { font-size: 0.84rem; margin-bottom: 6px; }
-  .storefront-card-price { font-size: 0.9rem; }
+  .storefront-card-desc { display: none; }
   .storefront-card-cat { display: none; }
+  .storefront-cats-inner { padding: 10px 16px; }
   .storefront-owner-bar { padding: 8px 14px; font-size: 0.72rem; }
   .storefront-footer-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
 }

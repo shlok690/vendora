@@ -3,8 +3,10 @@ import { User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { deleteField, doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { clearLocalDraft, type VendorOnboardingDraft } from '../utils/onboardingDraft';
+import type { ShopCategory } from '../utils/categories';
+import type { UiStyle } from '../utils/uiStyle';
 
-export type { VendorOnboardingDraft };
+export type { VendorOnboardingDraft, ShopCategory };
 
 export type UserRole = 'vendor' | 'customer';
 
@@ -18,6 +20,11 @@ export interface VendorShopProfile {
   whatsapp?: string;
   contactEmail?: string;
   themeColor?: string;
+  /** The vendor's own product categories, each with an optional photo. */
+  categories?: ShopCategory[];
+  /** Which of the three storefront looks the vendor chose. */
+  uiStyle?: UiStyle;
+  /** Superseded by uiStyle; kept so profiles saved earlier still parse. */
   layoutStyle?: ShopLayoutStyle;
   logoDataUrl?: string;
   bannerDataUrl?: string;

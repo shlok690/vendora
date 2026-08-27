@@ -1,4 +1,4 @@
-import type { ShopLayoutStyle } from '../context/AuthContext';
+import { DEFAULT_UI_STYLE, normalizeUiStyle, type UiStyle } from './uiStyle';
 
 /**
  * Persistence for the half-finished vendor onboarding wizard.
@@ -15,7 +15,7 @@ export type WizardStep = 1 | 2 | 3;
 
 export const TOTAL_STEPS = 3;
 export const DEFAULT_THEME_COLOR = 'var(--ink)';
-export const DEFAULT_LAYOUT_STYLE: ShopLayoutStyle = 'gallery';
+export { DEFAULT_UI_STYLE };
 
 export interface VendorOnboardingDraft {
   step: WizardStep;
@@ -26,7 +26,7 @@ export interface VendorOnboardingDraft {
   whatsapp: string;
   contactEmail: string;
   themeColor: string;
-  layoutStyle: ShopLayoutStyle;
+  uiStyle: UiStyle;
   logoDataUrl: string | null;
   bannerDataUrl: string | null;
   /** ISO timestamp — used to pick the newer of the local and Firestore copies. */
@@ -34,8 +34,6 @@ export interface VendorOnboardingDraft {
 }
 
 export const draftStorageKey = (uid: string) => `vendor_onboarding_draft_${uid}`;
-
-const LAYOUT_STYLES: ShopLayoutStyle[] = ['gallery', 'logo', 'banner'];
 
 const asString = (value: unknown, fallback = '') => (typeof value === 'string' ? value : fallback);
 
@@ -58,9 +56,9 @@ export const normalizeDraft = (raw: unknown): VendorOnboardingDraft | null => {
     whatsapp: asString(d.whatsapp),
     contactEmail: asString(d.contactEmail),
     themeColor: asString(d.themeColor, DEFAULT_THEME_COLOR) || DEFAULT_THEME_COLOR,
-    layoutStyle: LAYOUT_STYLES.includes(d.layoutStyle as ShopLayoutStyle)
-      ? (d.layoutStyle as ShopLayoutStyle)
-      : DEFAULT_LAYOUT_STYLE,
+    // Drafts saved before the style picker replaced the layout picker simply
+    // fall back to the default rather than failing to restore.
+    uiStyle: normalizeUiStyle(d.uiStyle),
     logoDataUrl: asImage(d.logoDataUrl),
     bannerDataUrl: asImage(d.bannerDataUrl),
     updatedAt: asString(d.updatedAt),
@@ -96,7 +94,7 @@ export const isDraftMeaningful = (d: VendorOnboardingDraft | null): boolean => {
       d.bannerDataUrl ||
       d.step > 1 ||
       d.themeColor !== DEFAULT_THEME_COLOR ||
-      d.layoutStyle !== DEFAULT_LAYOUT_STYLE
+      d.uiStyle !== DEFAULT_UI_STYLE
   );
 };
 
